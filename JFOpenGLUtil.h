@@ -21,6 +21,10 @@
 // limitations under the License.
 
 #import <Foundation/Foundation.h>
+#import <OpenGL/gl.h>
+#import <OpenGL/glu.h>
+#import <OpenGL/CGLTypes.h>
+
 
 @interface JFOpenGLUtil : NSObject
 
