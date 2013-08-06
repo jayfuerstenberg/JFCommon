@@ -439,9 +439,6 @@
 	CGFloat deepestY = 0.0f;
 	
 	NSArray *subviews = [superview subviews];
-	if ([subviews count] == 0) {
-		return;
-	}
 	
 	for (VIEW_TYPE *subview in subviews) {
 		CGFloat y = subview.frame.origin.y + subview.frame.size.height;
