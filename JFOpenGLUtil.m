@@ -22,24 +22,78 @@
 
 #import "JFOpenGLUtil.h"
 
+#define JFOpenGLUtilTriangleFanPointGranularity		16
+
+CGPoint __JFOpenGLUtil__PreviousTriangleFanPoints__[JFOpenGLUtilTriangleFanPointGranularity];
+CGFloat __JFOpenGLUtil__PreviousTriangleFanPointWidth__ = 0.0f;
+
+
 @implementation JFOpenGLUtil
+
+
+/*
+ * Draws a pseudo-point using a triangle fan.
+ * This method should be used when wide points are required and the OpenGL implementation does not support such widths.
+ *
+ * NOTE: This method assumes that a point is being drawn at both ends of a line and at every bend where such a line curves.
+ *		 As such the point width is meant to match the line width which doesn't change and the calculation of the triangle
+ *		 fan can be optimized to reuse the edge points.
+ *
+ * NOTE: This method may be processor intensive and if thin point widths can be used standard OpenGL point drawing is recommended.
+ */
++ (void) drawTriangleFanPointWithWidth: (CGFloat) width red: (CGFloat) red green: (CGFloat) green blue: (CGFloat) blue alpha: (CGFloat) alpha atPoint: (CGPoint) point {
+	
+	if (__JFOpenGLUtil__PreviousTriangleFanPointWidth__ != width) {
+		CGFloat halfWidth = width * 0.5f;
+		// Have to calculate the points to suit the provided width...
+		JFOpenGLVertex *vertex = [[JFOpenGLVertex alloc] initWithX: halfWidth
+																 y: 0.0f
+																 z: 0.0f];
+		
+		// The first edge point is directly to the right of the center point.
+		__JFOpenGLUtil__PreviousTriangleFanPoints__[0] = CGPointMake(halfWidth, 0.0f);
+
+		JFOpenGLMatrix *rotationMatrix = [JFOpenGLMatrix matrix];
+		[rotationMatrix setZAngle: (360.0f / JFOpenGLUtilTriangleFanPointGranularity)];
+		
+		for (NSUInteger index = 1; index < JFOpenGLUtilTriangleFanPointGranularity; index++) {
+			[rotationMatrix multiplyVertex: vertex];
+			__JFOpenGLUtil__PreviousTriangleFanPoints__[index] = CGPointMake(vertex->_x, vertex->_y);
+		}
+		[vertex release];
+		
+		// Reset the width...
+		__JFOpenGLUtil__PreviousTriangleFanPointWidth__ = width;
+	}
+	
+	CGPoint edgePoint;
+	glBegin(GL_TRIANGLE_FAN);
+	glColor4f(red, green, blue, alpha);
+	glVertex2f(point.x, -point.y); // center point
+	for (NSUInteger index = 0; index < JFOpenGLUtilTriangleFanPointGranularity; index++) {
+		edgePoint = __JFOpenGLUtil__PreviousTriangleFanPoints__[index];
+		glVertex2f(point.x + edgePoint.x, -(point.y + edgePoint.y));
+	}
+	edgePoint = __JFOpenGLUtil__PreviousTriangleFanPoints__[0]; // Close the point.
+	glVertex2f(point.x + edgePoint.x, -(point.y + edgePoint.y));
+	glEnd();
+}
 
 /*
  * Draws a pseudo-line using a quad.
- * This method should be used when wide lines are required and the OpenGL implementation
- * does not support such widths.
+ * This method should be used when wide lines are required and the OpenGL implementation does not support such widths.
  *
  * NOTE: This method may be processor intensive and if thin line widths can be used the
  *		 standard OpenGL line drawing method is advised.
  */
-+ (void) drawQuadLineWithWidth: (CGFloat) width red: (CGFloat) red green: (CGFloat) green blue: (CGFloat) blue from: (CGPoint) beginPoint to: (CGPoint) endPoint {
++ (void) drawQuadLineWithWidth: (CGFloat) width red: (CGFloat) red green: (CGFloat) green blue: (CGFloat) blue alpha: (CGFloat) alpha from: (CGPoint) beginPoint to: (CGPoint) endPoint {
 	
 	CGPoint cornerPoint = [JFOpenGLUtil quadCornerOffsetFrom: beginPoint
 											   whenDrawingTo: endPoint
 											   withLineWidth: width];
 	
 	glBegin(GL_QUADS);
-	glColor3f(red, green, blue);
+	glColor4f(red, green, blue, alpha);
 	glVertex2f(beginPoint.x - cornerPoint.x, -(beginPoint.y - cornerPoint.y));
 	glVertex2f(beginPoint.x + cornerPoint.x, -(beginPoint.y + cornerPoint.y));
 	glVertex2f(endPoint.x + cornerPoint.x, -(endPoint.y + cornerPoint.y));

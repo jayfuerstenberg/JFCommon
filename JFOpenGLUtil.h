@@ -21,15 +21,15 @@
 // limitations under the License.
 
 #import <Foundation/Foundation.h>
-#import <OpenGL/gl.h>
-#import <OpenGL/glu.h>
-#import <OpenGL/CGLTypes.h>
+
+#import "JFOpenGLMatrix.h"
+#import "JFOpenGLVertex.h"
 
 
 @interface JFOpenGLUtil : NSObject
 
-+ (void) drawQuadLineWithWidth: (CGFloat) width red: (CGFloat) red green: (CGFloat) green blue: (CGFloat) blue from: (CGPoint) beginPoint to: (CGPoint) endPoint;
-
++ (void) drawTriangleFanPointWithWidth: (CGFloat) width red: (CGFloat) red green: (CGFloat) green blue: (CGFloat) blue alpha: (CGFloat) alpha atPoint: (CGPoint) point;
++ (void) drawQuadLineWithWidth: (CGFloat) width red: (CGFloat) red green: (CGFloat) green blue: (CGFloat) blue alpha: (CGFloat) alpha from: (CGPoint) beginPoint to: (CGPoint) endPoint;
 + (CGPoint) quadCornerOffsetFrom: (CGPoint) beginPoint whenDrawingTo: (CGPoint) endPoint withLineWidth: (CGFloat) lineWidth;
 
 @end
