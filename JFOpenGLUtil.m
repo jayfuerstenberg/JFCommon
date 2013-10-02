@@ -136,6 +136,46 @@ CGFloat __JFOpenGLUtil__PreviousTriangleFanPointWidth__ = 0.0f;
 	return CGPointMake(xOffset, yOffset);
 }
 
+
+/*
+ * Returns YES if the provided point lies within the 2D triangle made up of points A, B, and C.
+ *
+ * Implementation based on: http://stackoverflow.com/a/13301035/869287 but optimized for slightly better performance.
+ */
++ (BOOL) isPoint: (CGPoint) point insideTriangleComprisedOfA: (CGPoint) a b: (CGPoint) b c: (CGPoint) c {
+	
+	// Pre-calculate reused numbers...
+	CGFloat axcx = a.x - c.x;
+	CGFloat bycy = b.y - c.y;
+	CGFloat cxbx = c.x - b.x;
+	CGFloat pxcx = point.x - c.x;
+	CGFloat pycy = point.y - c.y;
+	CGFloat bycyaxcxcxbxaycy = bycy * axcx + cxbx * (a.y - c.y);
+	
+	if (bycyaxcxcxbxaycy == 0.0f) {
+		// Assume NO, in attempt to prevent DIV/0 below.
+		return NO;
+	}
+	
+	// Perform the main calculation...
+	CGFloat alpha = (bycy * pxcx + cxbx * pycy) / bycyaxcxcxbxaycy;
+	if (alpha <= 0.0f) {
+		// Alpha is not greater than 0 so the point is already known to be outside.
+		return NO;
+	}
+	
+	CGFloat beta = ((c.y - a.y) * pxcx + axcx * pycy) / bycyaxcxcxbxaycy;
+	if (beta <= 0.0f) {
+		// Beta is not greater than 0 so the point is already known to be outside.
+		return NO;
+	}
+	
+	// Finally test the gamma and return the result...
+	CGFloat gamma = 1.0f - alpha - beta;
+	return gamma > 0.0f;
+}
+
+
 + (double) normalizeAngle: (double) angle {
 	
 	if (angle > 360.0) {
