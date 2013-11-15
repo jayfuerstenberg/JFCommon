@@ -23,6 +23,11 @@
 
 #import <Foundation/Foundation.h>
 
+#import "TargetConditionals.h"
+
+#if TARGET_OS_IPHONE || TARGET_IPHONE_SIMULATOR
+#import <UIKit/UIKit.h>
+#endif
 
 enum {
     JFAnchorPointTopLeft		= 1 << 0, // Top left corner
@@ -38,13 +43,12 @@ enum {
 typedef NSUInteger JFAnchorPoint;
 
 
-
-#if TARGET_OS_MAC
-	#define VIEW_TYPE			NSView
-	#define RECT_TYPE			NSRect
-#elif TARGET_OS_IPHONE || TARGET_IPHONE_SIMULATOR
-	#define VIEW_TYPE			UIView
-	#define RECT_TYPE			CGRect
+#if TARGET_OS_IPHONE || TARGET_IPHONE_SIMULATOR
+    #define VIEW_TYPE			UIView
+    #define RECT_TYPE			CGRect
+#else
+    #define VIEW_TYPE			NSView
+    #define RECT_TYPE			NSRect
 #endif
 
 
