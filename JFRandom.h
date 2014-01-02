@@ -36,4 +36,6 @@
 + (NSData *) generateRandomDataOfLength: (NSUInteger) length;
 + (NSString *) generateRandomStringOfLength: (NSUInteger) length;
 
++ (NSDate *) generateRandomDateBetweenDaysAgo: (NSInteger)daysAgo andDaysFromNow: (NSInteger)daysFromNow;
+
 @end
