@@ -22,7 +22,109 @@
 
 #import "JFOpenGLView.h"
 
+
+#if TARGET_OS_IPHONE || TARGET_IPHONE_SIMULATOR
+
+
+#pragma mark - iOS implementation
+
 @implementation JFOpenGLView
+
+
+#pragma mark - Properties
+
+@synthesize touchDelegate = _touchDelegate;
+
+
+#pragma mark - Object lifecycle methods
+
+- (id) init {
+    
+    NSLog(@"Invoke initWithFrame: instead.");
+    [self release];
+    return nil;
+}
+
+- (id) initWithFrame: (CGRect) frame {
+    
+    if ((self = [super initWithFrame: frame])) {
+        /*
+         * NOTE: The OpenGL ES implementation of this class is based on the 1.1
+         * version of the standard.  If your app uses a 2.0 or later standard
+         * switch the API flag below.
+         */
+        _context = [[EAGLContext alloc] initWithAPI: kEAGLRenderingAPIOpenGLES1];
+        
+        [self setContext: _context];
+        
+        [self setDrawableColorFormat: GLKViewDrawableColorFormatRGBA8888];
+        [self setDrawableDepthFormat: GLKViewDrawableDepthFormat16];
+        [self setDrawableMultisample: GLKViewDrawableMultisample4X];
+    }
+	
+    return self;
+}
+
+- (void) dealloc {
+	
+#if !__has_feature(objc_arc)
+    [_touchDelegate release];
+    
+    if ([EAGLContext currentContext] == _context) {
+        [EAGLContext setCurrentContext: nil];
+    }
+    
+    [_context release];
+	[super dealloc];
+#else
+    _touchDelegate = nil;
+    
+    if ([EAGLContext currentContext] == _context) {
+        [EAGLContext setCurrentContext: nil];
+    }
+    
+    _context = nil;
+#endif
+}
+
+
+#pragma mark - Drawing methods
+
+- (void) render {
+	// NOTE: Override this method in child class to perform actual rendering.
+}
+
+- (void) drawRect: (CGRect) rect {
+    
+    glMatrixMode(GL_PROJECTION);
+    glLoadIdentity();
+    CGFloat halfWidth = self.bounds.size.width / 2.0f;
+    CGFloat halfHeight = self.bounds.size.height / 2.0f;
+	glOrthof(-halfWidth, halfWidth, -halfHeight, halfHeight, -1.0f, 10000.0f);
+    glMatrixMode(GL_MODELVIEW);
+    
+    glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    
+    glBindTexture(GL_TEXTURE_2D, 0);
+	glEnable(GL_TEXTURE_2D);
+	glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	
+    [self render];
+}
+
+@end
+
+#elif TARGET_OS_MAC
+
+
+#pragma mark - OSX implementation
+
+@implementation JFOpenGLView
+
+
+#pragma mark - Object lifecycle methods
 
 - (id) init {
     
@@ -47,7 +149,7 @@
 		NSOpenGLPFAColorSize, 24, // 24-bit color
 		NSOpenGLPFADoubleBuffer, // Double buffer to flush buffer in one step
 		NSOpenGLPFAAccelerated, // Support accelerated graphics
-		0 
+		0
 	};
 	
 	NSOpenGLPixelFormat *pixelFormat = [[NSOpenGLPixelFormat alloc] initWithAttributes: attrs];
@@ -68,7 +170,6 @@
 	return self;
 }
 
-
 - (void) dealloc {
 	
 #if !__has_feature(objc_arc)
@@ -79,10 +180,8 @@
 #endif
 }
 
-- (void) render {
-	// NOTE: Override this method in child class to perform actual rendering.
-}
 
+#pragma mark - View lifecycle methods
 
 /*
  * Prepares the OpenGL configuration.
@@ -155,14 +254,12 @@
 	_setup = YES;
 }
 
-
 /*
  * Allows the view to accept user input.
  */
 - (BOOL) acceptsFirstResponder {
 	return YES;
 }
-
 
 /*
  * Indicates that this view is opaque (to make the view more performant at rendering time).
@@ -171,6 +268,12 @@
 	return YES;
 }
 
+
+#pragma mark - Drawing methods
+
+- (void) render {
+	// NOTE: Override this method in child class to perform actual rendering.
+}
 
 /*
  * Rendering method.
@@ -192,5 +295,6 @@
 	[[self openGLContext] flushBuffer];
 }
 
-
 @end
+
+#endif

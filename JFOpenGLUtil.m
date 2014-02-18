@@ -31,6 +31,162 @@ CGFloat __JFOpenGLUtil__PreviousTriangleFanPointWidth__ = 0.0f;
 @implementation JFOpenGLUtil
 
 
+
+#if TARGET_OS_IPHONE || TARGET_IPHONE_SIMULATOR
+
+#pragma mark - iOS implementation
+
+/*
+ * Draws a pseudo-point using a triangle fan.
+ * This method should be used when wide points are required and the OpenGL ES implementation does not support such widths.
+ *
+ * NOTE: This method assumes that a point is being drawn at both ends of a line and at every bend where such a line curves.
+ *		 As such the point width is meant to match the line width which doesn't change and the calculation of the triangle
+ *		 fan can be optimized to reuse the edge points.
+ *
+ * NOTE: This method may be processor intensive and if thin point widths can be used standard OpenGL ES point drawing is recommended.
+ */
++ (void) drawTriangleFanPointWithWidth: (CGFloat) width red: (CGFloat) red green: (CGFloat) green blue: (CGFloat) blue alpha: (CGFloat) alpha atPoint: (CGPoint) point {
+	
+	if (__JFOpenGLUtil__PreviousTriangleFanPointWidth__ != width) {
+		CGFloat halfWidth = width * 0.5f;
+		// Have to calculate the points to suit the provided width...
+		JFOpenGLVertex *vertex = [[JFOpenGLVertex alloc] initWithX: halfWidth
+																 y: 0.0f
+																 z: 0.0f];
+		
+		// The first edge point is directly to the right of the center point.
+		__JFOpenGLUtil__PreviousTriangleFanPoints__[0] = CGPointMake(halfWidth, 0.0f);
+        
+		JFOpenGLMatrix *rotationMatrix = [JFOpenGLMatrix matrix];
+		[rotationMatrix setZAngle: (360.0f / JFOpenGLUtilTriangleFanPointGranularity)];
+		
+		for (NSUInteger index = 1; index < JFOpenGLUtilTriangleFanPointGranularity; index++) {
+			[rotationMatrix multiplyVertex: vertex];
+			__JFOpenGLUtil__PreviousTriangleFanPoints__[index] = CGPointMake(vertex->_x, vertex->_y);
+		}
+		[vertex release];
+		
+		// Reset the width...
+		__JFOpenGLUtil__PreviousTriangleFanPointWidth__ = width;
+	}
+    
+    
+    GLfloat colors[JFOpenGLUtilTriangleFanPointGranularity * 4 * 3];
+    GLfloat vertices[JFOpenGLUtilTriangleFanPointGranularity * 3 * 3];
+    CGPoint edgePoint;
+    CGPoint nextEdgePoint;
+    
+    NSUInteger arrayIndex = 0;
+    NSUInteger colorIndex = 0;
+	for (NSUInteger index = 0; index < JFOpenGLUtilTriangleFanPointGranularity; index++) {
+		edgePoint = __JFOpenGLUtil__PreviousTriangleFanPoints__[index];
+        if (index == JFOpenGLUtilTriangleFanPointGranularity - 1) {
+            nextEdgePoint = __JFOpenGLUtil__PreviousTriangleFanPoints__[0];
+        } else {
+            nextEdgePoint = __JFOpenGLUtil__PreviousTriangleFanPoints__[index + 1];
+        }
+        
+        vertices[arrayIndex++] = point.x;
+        vertices[arrayIndex++] = point.y;
+        vertices[arrayIndex++] = 0.0f;
+        
+        vertices[arrayIndex++] = point.x + edgePoint.x;
+        vertices[arrayIndex++] = (point.y + edgePoint.y);
+        vertices[arrayIndex++] = 0.0f;
+        
+        vertices[arrayIndex++] = point.x + nextEdgePoint.x;
+        vertices[arrayIndex++] = (point.y + nextEdgePoint.y);
+        vertices[arrayIndex++] = 0.0f;
+        
+        colors[colorIndex++] = red;
+        colors[colorIndex++] = green;
+        colors[colorIndex++] = blue;
+        colors[colorIndex++] = alpha;
+        
+        colors[colorIndex++] = red;
+        colors[colorIndex++] = green;
+        colors[colorIndex++] = blue;
+        colors[colorIndex++] = alpha;
+        
+        colors[colorIndex++] = red;
+        colors[colorIndex++] = green;
+        colors[colorIndex++] = blue;
+        colors[colorIndex++] = alpha;
+	}
+    
+    glEnableClientState(GL_VERTEX_ARRAY);
+    glEnableClientState(GL_COLOR_ARRAY);
+    glVertexPointer(3, GL_FLOAT, 0, &vertices);
+    glColorPointer(4, GL_FLOAT, 0, colors);
+    glDrawArrays(GL_TRIANGLE_FAN, 0, JFOpenGLUtilTriangleFanPointGranularity * 3);
+    glDisableClientState(GL_COLOR_ARRAY);
+    glDisableClientState(GL_VERTEX_ARRAY);
+}
+
+/*
+ * Draws a pseudo-line using a quad.
+ * This method should be used when wide lines are required and the OpenGL ES implementation
+ * does not support such widths.
+ *
+ * NOTE: This method may be processor intensive and if thin line widths can be used the
+ *		 standard OpenGL ES line drawing method is advised.
+ */
++ (void) drawQuadLineWithWidth: (CGFloat) width red: (CGFloat) red green: (CGFloat) green blue: (CGFloat) blue alpha: (CGFloat) alpha from: (CGPoint) beginPoint to: (CGPoint) endPoint {
+    
+    CGPoint cornerPoint = [JFOpenGLUtil quadCornerOffsetFrom: beginPoint
+											   whenDrawingTo: endPoint
+											   withLineWidth: width];
+    
+    GLfloat quad[12];
+    quad[0] = beginPoint.x - cornerPoint.x;
+    quad[1] = (beginPoint.y - cornerPoint.y);
+    quad[2] = 0.0f;
+    quad[3] = beginPoint.x + cornerPoint.x;
+    quad[4] = (beginPoint.y + cornerPoint.y);
+    quad[5] = 0.0f;
+    quad[6] = endPoint.x - cornerPoint.x;
+    quad[7] = (endPoint.y - cornerPoint.y);
+    quad[8] = 0.0f;
+    quad[9] = endPoint.x + cornerPoint.x;
+    quad[10] = (endPoint.y + cornerPoint.y);
+    quad[11] = 0.0f;
+    
+    GLfloat colors[16];
+    colors[0] = red;
+    colors[1] = green;
+    colors[2] = blue;
+    colors[3] = alpha;
+    colors[4] = red;
+    colors[5] = green;
+    colors[6] = blue;
+    colors[7] = alpha;
+    colors[8] = red;
+    colors[9] = green;
+    colors[10] = blue;
+    colors[11] = alpha;
+    colors[12] = red;
+    colors[13] = green;
+    colors[14] = blue;
+    colors[15] = alpha;
+    
+    glEnableClientState(GL_VERTEX_ARRAY);
+    glEnableClientState(GL_COLOR_ARRAY);
+    
+    glVertexPointer(3, GL_FLOAT, 0, &quad);
+    glColorPointer(4, GL_FLOAT, 0, colors);
+    glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+    
+    glDisableClientState(GL_COLOR_ARRAY);
+    glDisableClientState(GL_VERTEX_ARRAY);
+}
+
+
+#elif TARGET_OS_MAC
+
+
+#pragma mark - OSX implementation
+
 /*
  * Draws a pseudo-point using a triangle fan.
  * This method should be used when wide points are required and the OpenGL implementation does not support such widths.
@@ -101,6 +257,10 @@ CGFloat __JFOpenGLUtil__PreviousTriangleFanPointWidth__ = 0.0f;
 	glEnd();
 }
 
+#endif
+
+
+#pragma mark - Utility methods
 
 /*
  * Calculates and returns the corner offset from the provided beginning point.

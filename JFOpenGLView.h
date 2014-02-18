@@ -20,21 +20,67 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#import <Foundation/Foundation.h>
 
-#import "JFOpenGLCamera.h"
+#if TARGET_OS_IPHONE || TARGET_IPHONE_SIMULATOR
+    #import <UIKit/UIKit.h>
+    #import <GLKit/GLKit.h>
+    #import <OpenGLES/EAGL.h>
+    #import <OpenGLES/ES1/gl.h>
+    #import <OpenGLES/ES1/glext.h>
+#elif TARGET_OS_MAC
+    #import <Foundation/Foundation.h>
+#endif
 
+
+#if TARGET_OS_IPHONE || TARGET_IPHONE_SIMULATOR
+
+
+#pragma mark - iOS implementation
+
+/*
+ * NOTE: This class is built upon the GLKit stnadard to abstract away
+ * The buffer maintenance logic and for easy enabling of anti-aliasing.
+ * As such iOS 5.0 is a minimum requirement for using this class.
+ */
+@interface JFOpenGLView : GLKView {
+	
+	EAGLContext *_context;
+	
+	BOOL _setup;
+    
+    id <NSObject> _touchDelegate;
+}
+
+
+#pragma mark - Properties
+
+@property (nonatomic, retain) id <NSObject> touchDelegate;
+
+
+#pragma mark - Object lifecycle methods
+
+- (id) initWithFrame: (CGRect) frameRect;
+
+@end
+
+#elif TARGET_OS_MAC
+
+
+#pragma mark - OSX implementation
 
 @interface JFOpenGLView : NSOpenGLView {
 	
 	BOOL _setup;
-    
-    JFOpenGLCamera *_camera;
 }
+
+
+#pragma mark - Object lifecycle methods
 
 - (id) initWithFrame: (NSRect) frameRect;
 
-- (void) render;
-
-
 @end
+
+#endif
+
+
+
