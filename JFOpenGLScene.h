@@ -1,5 +1,5 @@
 //
-// JFOpenGLRenderable.h
+// JFOpenGLScene.h
 // JFCommon
 //
 // Created by Jason Fuerstenberg on 2009/06/22.
@@ -22,26 +22,31 @@
 
 #import <Foundation/Foundation.h>
 
-#import "JFOpenGLPositionable.h"
-#import "JFOpenGLAdvanceable.h"
+#import "JFOpenGLCamera.h"
+#import "JFOpenGLRenderable.h"
 
-
-@class JFOpenGLCamera;
 
 /*
- * The protocol to which all renderable OpenGL models must adhere.
- * Renderable objects are automatically assumed to also be positionable.
+ * A scene contains objects intended for rendering on screen.
+ * In addition the scene manages its contents from one rendering
+ * to the next.  The speed of this is determined by how frequently
+ * the OpenGL view renders.
  */
-@protocol JFOpenGLRenderable <JFOpenGLPositionable, JFOpenGLAdvanceable>
+@interface JFOpenGLScene : NSObject {
+    
+    // An array of JFOpenGLRenderable implementing objects.
+    NSArray *_objects;
+}
 
-/*
- * Transforms the original points to those relative to the provided camera for later rendering.
- */
-- (void) transformWithCamera: (JFOpenGLCamera *) camera;
 
-/*
- * Performs the actual OpenGL instructions to render.
- */
-- (void) render;
+#pragma mark - Properties
+
+@property (nonatomic, retain) NSArray *objects;
+
+
+#pragma mark - Action methods
+
+- (void) advance;
+- (void) renderWithCamera: (JFOpenGLCamera *) camera;
 
 @end

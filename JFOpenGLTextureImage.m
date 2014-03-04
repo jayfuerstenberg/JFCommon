@@ -25,8 +25,15 @@
 
 @implementation JFOpenGLTextureImage
 
-@synthesize alphaValue = _alphaValue;
 
+#pragma mark - Properties
+
+@synthesize alphaValue = _alphaValue;
+@synthesize textureInfo = _textureInfo;
+
+
+
+#pragma mark - Object lifecycle methods
 
 - (void) dealloc {
 	
@@ -34,10 +41,14 @@
 	[self performSelectorOnMainThread: @selector(releaseTextureInMainThread)
 						   withObject: nil
 						waitUntilDone: YES];
+    
+    [_textureInfo release];
 	
 	[super dealloc];
 }
 
+
+#pragma mark - Getter / setter methods
 
 /*
  * Returns the texture ID.
@@ -46,7 +57,6 @@
 
 	return _textureId;
 }
-
 
 - (void) setAlphaValue: (CGFloat) alphaValue {
 	
@@ -61,6 +71,25 @@
 	_alphaValue = alphaValue;
 }
 
+
+#if TARGET_OS_IPHONE || TARGET_IPHONE_SIMULATOR
+
+/*
+ * Loads a texture from the given data to a particular size.
+ *
+ * data		The image data from which the texture will be loaded.
+ */
+- (void) loadFromData: (NSData *) data {
+	
+	if (data == nil) {
+		return;
+	}
+    
+    UIImage *image = [UIImage imageWithData: data];
+    [self loadFromImage: image];
+}
+
+#elif TARGET_OS_MAC
 
 /*
  * Loads a texture from the given data to a particular size.
@@ -110,7 +139,6 @@
 				
 				glBindTexture(GL_TEXTURE_2D, _textureId);
 				
-				
 				// when texture area is small, bilinear filter the closest mipmap
 				glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 				// when texture area is large, bilinear filter the original
@@ -121,14 +149,7 @@
 				
 				GLenum err = glGetError();
 				if (err != GL_NO_ERROR) {
-					NSUInteger freeMemory = [[JFMemoryManager sharedManager] freeMemory];
-					if (err == GL_INVALID_OPERATION && freeMemory < 1024 * 1024 * 10) {
-						// Might too little memory to create the texture.
-						NSLog(@"Could not create OpenGL texture due to error GL_INVALID_OPERATION.  May be related to only %i bytes of free memory remaining.", freeMemory);
-					} else {
-						NSLog(@"glError: 0x%04X", err);
-						NSLog(@"Texture image dimension = %f x %f", size.width, size.height);
-					}
+					NSLog(@"glError: 0x%04X", err);
 				}
 				
 				if (imageContext != nil) {
@@ -149,6 +170,52 @@
 	}
 }
 
+#endif
+
+
+#if TARGET_OS_IPHONE || TARGET_IPHONE_SIMULATOR
+
+/*
+ * Loads a texture from the given image to a particular size.
+ *
+ * image	The image from which the texture will be loaded.
+ */
+- (void) loadFromImage: (UIImage *) image {
+	
+	if (image == nil) {
+        return;
+    }
+    
+    glGenTextures(1, &_textureId);
+    glBindTexture(GL_TEXTURE_2D, _textureId);
+    glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    
+    GLuint width = CGImageGetWidth(image.CGImage);
+    GLuint height = CGImageGetHeight(image.CGImage);
+    CGColorSpaceRef colorSpace = CGColorSpaceCreateDeviceRGB();
+    void *imageData = malloc(height * width * 4);
+    CGContextRef context = CGBitmapContextCreate(imageData, width, height, 8, 4 * width, colorSpace, kCGImageAlphaPremultipliedLast | kCGBitmapByteOrder32Big);
+    CGColorSpaceRelease(colorSpace);
+    CGContextClearRect(context, CGRectMake(0, 0, width, height));
+    CGContextTranslateCTM (context, 0, height);
+    CGContextScaleCTM (context, 1.0, -1.0);
+    
+    CGContextDrawImage(context, CGRectMake( 0, 0, width, height), image.CGImage);
+    
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, imageData);
+    
+    // NOTE: At this point OpenGL has the texture in its own buffer.
+    
+    CGContextRelease(context);
+    
+    free(imageData);
+}
+
+
+#elif TARGET_OS_MAC
 
 /*
  * Loads a texture from the given image to a particular size.
@@ -163,6 +230,27 @@
 				toSize: size];
 }
 
+#endif
+
+
+/*
+ * Loads a GLKit optimized texture info object from the image data provided.
+ */
+- (void) loadForGLKitFromData: (NSData *) data originIsBottomLeft: (BOOL) originIsBottomLeft {
+    
+    if ([data length] == 0) {
+        return;
+    }
+    
+    NSDictionary *options = [NSDictionary dictionaryWithObjectsAndKeys: [NSNumber numberWithBool: originIsBottomLeft], GLKTextureLoaderOriginBottomLeft,
+                                                                        nil];
+    
+    _textureInfo = [[GLKTextureLoader textureWithContentsOfData: data
+                                                        options: options
+                                                          error: nil] retain];
+}
+
+// NOTE: The below method is commented only because it has not been tested recently.  It may still work and you're free to try it.
 /*
 - (void) loadPvrtcImage: (NSString *) imageName_ withWidth: (GLsizei) width_ height: (GLsizei) height_ bitsPerPixel: (GLsizei) bpp_ alpha: (BOOL) alpha_ {
 	
@@ -211,6 +299,11 @@
 }
 */
 
+
+#if TARGET_OS_IPHONE || TARGET_IPHONE_SIMULATOR
+
+#elif TARGET_OS_MAC
+
 /*
  * Returns a CGRect in the middle of the sized image.
  *
@@ -240,10 +333,11 @@
 	return bestRect;
 }
 
+#endif
+
 
 - (void) releaseTextureInMainThread {
 	
-	//NSLog(@"RELEASING OPENGL TEXTURE ID: %i", _textureId);
 	if (_textureId > 0) {
 		// Unbind the texture from the video card's memory...
 		glDeleteTextures(1, &_textureId);

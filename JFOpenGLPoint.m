@@ -34,6 +34,14 @@
 
 #pragma mark - Object lifecycle methods
 
++ (id) point {
+	
+	id point = [[JFOpenGLPoint alloc] init];
+	[point autorelease];
+	
+	return point;
+}
+
 /*
  * Default constructor.
  */
@@ -48,7 +56,6 @@
 	
 	return self;
 }
-
 
 - (void) dealloc {
 	

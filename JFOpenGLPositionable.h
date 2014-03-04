@@ -42,6 +42,5 @@
 
 - (BOOL) shouldUpdateTransformMatrix;
 - (void) setShouldUpdateTransformMatrix: (BOOL) shouldUpdateTransformMatrix;
-//- (void) didUpdateTransformMatrix;
 
 @end

@@ -33,7 +33,9 @@
 
 #pragma mark - Properties
 
-@synthesize touchDelegate = _touchDelegate;
+@synthesize positionSlot = _positionSlot;
+@synthesize colorSlot = _colorSlot;
+@synthesize baseEffect = _baseEffect;
 
 
 #pragma mark - Object lifecycle methods
@@ -45,21 +47,36 @@
     return nil;
 }
 
-- (id) initWithFrame: (CGRect) frame {
+- (id) initWithFrame: (CGRect) frame openGlApiVersion: (NSUInteger) openGlApiVersion originIsBottomLeft: (BOOL) originIsBottomLeft {
     
     if ((self = [super initWithFrame: frame])) {
-        /*
-         * NOTE: The OpenGL ES implementation of this class is based on the 1.1
-         * version of the standard.  If your app uses a 2.0 or later standard
-         * switch the API flag below.
-         */
-        _context = [[EAGLContext alloc] initWithAPI: kEAGLRenderingAPIOpenGLES1];
+        
+        _openGlApiVersion = openGlApiVersion;
+        _originIsBottomLeft = originIsBottomLeft;
+
+        switch (openGlApiVersion) {
+            case 1:
+                _context = [[EAGLContext alloc] initWithAPI: kEAGLRenderingAPIOpenGLES1];
+                break;
+            case 2:
+                _context = [[EAGLContext alloc] initWithAPI: kEAGLRenderingAPIOpenGLES2];
+                break;
+            default:
+                // NOTE: OpenGL 3.0 is not supported at this time.
+                [self release];
+                return nil;
+        }
         
         [self setContext: _context];
+        [EAGLContext setCurrentContext: _context];
         
         [self setDrawableColorFormat: GLKViewDrawableColorFormatRGBA8888];
         [self setDrawableDepthFormat: GLKViewDrawableDepthFormat16];
         [self setDrawableMultisample: GLKViewDrawableMultisample4X];
+        
+        if (openGlApiVersion == 2) {
+            [self lazyInitBaseEffect];
+        }
     }
 	
     return self;
@@ -68,49 +85,66 @@
 - (void) dealloc {
 	
 #if !__has_feature(objc_arc)
-    [_touchDelegate release];
     
     if ([EAGLContext currentContext] == _context) {
         [EAGLContext setCurrentContext: nil];
     }
     
     [_context release];
-	[super dealloc];
-#else
-    _touchDelegate = nil;
+    [_baseEffect release];
     
+	[super dealloc];
+
+#else
     if ([EAGLContext currentContext] == _context) {
         [EAGLContext setCurrentContext: nil];
     }
     
     _context = nil;
+    _baseEffect = nil;
 #endif
+}
+
+
+#pragma mark - Lazy-initialization methods
+
+- (void) lazyInitBaseEffect {
+    
+    if (_baseEffect != nil) {
+        return;
+    }
+    
+    _baseEffect = [[GLKBaseEffect alloc] init];
+    
+    if (_originIsBottomLeft) {
+        GLKMatrix4 projectionMatrix = GLKMatrix4MakeOrtho(0, self.bounds.size.width, 0, self.bounds.size.height, -1024, 1024);
+        _baseEffect.transform.projectionMatrix = projectionMatrix;
+    } else {
+        GLKMatrix4 projectionMatrix = GLKMatrix4MakeOrtho(0, self.bounds.size.width, self.bounds.size.height, 0, -1024, 1024);
+        _baseEffect.transform.projectionMatrix = projectionMatrix;
+    }
 }
 
 
 #pragma mark - Drawing methods
 
 - (void) render {
-	// NOTE: Override this method in child class to perform actual rendering.
-}
-
-- (void) drawRect: (CGRect) rect {
-    
-    glMatrixMode(GL_PROJECTION);
-    glLoadIdentity();
-    CGFloat halfWidth = self.bounds.size.width / 2.0f;
-    CGFloat halfHeight = self.bounds.size.height / 2.0f;
-	glOrthof(-halfWidth, halfWidth, -halfHeight, halfHeight, -1.0f, 10000.0f);
-    glMatrixMode(GL_MODELVIEW);
     
     glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     
-    glBindTexture(GL_TEXTURE_2D, 0);
-	glEnable(GL_TEXTURE_2D);
+    if (_openGlApiVersion == 1) {
+        // Clear any previous texture.
+        glBindTexture(GL_TEXTURE_2D, 0);
+        glEnable(GL_TEXTURE_2D);
+    }
+    
 	glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-	
+}
+
+- (void) drawRect: (CGRect) rect {
+    
     [self render];
 }
 

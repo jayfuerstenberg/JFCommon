@@ -37,15 +37,28 @@
 	return vertex;	
 }
 
++ (id) vertexWithX: (GLfloat) x y: (GLfloat) y z: (GLfloat) z {
+
+    JFOpenGLVertex *vertex = [[JFOpenGLVertex alloc] init];
+#if !__has_feature(objc_arc)
+    [vertex autorelease];
+#endif
+    
+    [vertex setX: x
+               y: y
+               z: z];
+    
+	return vertex;
+}
 
 - (id) init {
 	
 	self = [super init];
     if (self != nil) {
-        _red = 255;
-        _green = 255;
-        _blue = 255;
-        _alpha = 255;
+        _red = 1.0f;
+        _green = 1.0f;
+        _blue = 1.0f;
+        _alpha = 1.0f;
     }
 	
 	return self;
@@ -56,18 +69,24 @@
  * Overloaded constructor.
  */
 - (id) initWithX: (GLfloat) x y: (GLfloat) y z: (GLfloat) z {
-    
+
 	self = [super init];
     if (self != nil) {
-        [self setX: x y: y z: z];
-		_red = 255;
-		_green = 255;
-		_blue = 255;
-		_alpha = 255;
+        [self setX: x
+                 y: y
+                 z: z];
+        
+		_red = 1.0f;
+		_green = 1.0f;
+		_blue = 1.0f;
+		_alpha = 1.0f;
     }
 	
 	return self;
 }
+
+
+#pragma mark - Getter / setter methods
 
 - (void) setX: (GLfloat) x y: (GLfloat) y z: (GLfloat) z {
 	
@@ -77,16 +96,21 @@
 	
 }
 
-- (void) setRed: (GLuint) red green: (GLuint) green blue: (GLuint) blue {
+- (void) setRed: (GLfloat) red green: (GLfloat) green blue: (GLfloat) blue {
     
 	_red = red;
 	_green = green;
 	_blue = blue;
 }
 
-- (void) setAlpha: (GLuint) alpha {
+- (void) setAlpha: (GLfloat) alpha {
     
 	_alpha = alpha;
+}
+
+- (GLfloat) alpha {
+    
+    return _alpha;
 }
 
 - (void) setU: (GLfloat) u v: (GLfloat) v {
@@ -132,10 +156,10 @@
 		_y = 0.0f;
 		_z = 0.0f;
 		
-		_red = 255;
-		_green = 255;
-		_blue = 255;
-		_alpha = 255;
+		_red = 1.0f;
+		_green = 1.0f;
+		_blue = 1.0f;
+		_alpha = 1.0f;
 		
 		return;
 	}
@@ -163,7 +187,7 @@
 
 
 - (void) setRelativeToX: (GLfloat) x y: (GLfloat) y z: (GLfloat) z {
-    
+
 	_x -= x;
 	_y -= y;
     _z -= z;
@@ -208,7 +232,7 @@
 	
 	GLfloat xDiff = self->_x - other->_x;
 	GLfloat yDiff = self->_y - other->_y;
-	
+    
 	if (xDiff < 0.0f) {
 		xDiff = -xDiff;
 	}
@@ -218,7 +242,8 @@
 	}
 	
 	return sqrt((xDiff * xDiff) + (yDiff * yDiff));
-    // TODO: is this good enough for 3D distance calculations if they are all on the same plane?  Might need to go the extra mile here.
+    // TODO: is this good enough for 3D distance calculations if they are all on the same plane?
 }
+
 
 @end

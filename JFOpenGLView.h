@@ -27,9 +27,13 @@
     #import <OpenGLES/EAGL.h>
     #import <OpenGLES/ES1/gl.h>
     #import <OpenGLES/ES1/glext.h>
+    #import <OpenGLES/ES2/gl.h>
+    #import <OpenGLES/ES2/glext.h>
 #elif TARGET_OS_MAC
     #import <Foundation/Foundation.h>
 #endif
+
+#import "JFOpenGLMatrix.h"
 
 
 #if TARGET_OS_IPHONE || TARGET_IPHONE_SIMULATOR
@@ -39,27 +43,44 @@
 
 /*
  * NOTE: This class is built upon the GLKit stnadard to abstract away
- * The buffer maintenance logic and for easy enabling of anti-aliasing.
+ * the buffer maintenance logic and for easy enabling of anti-aliasing.
  * As such iOS 5.0 is a minimum requirement for using this class.
+ * This class can be used with either OpenGL ES 1.1 or 2.0.
  */
 @interface JFOpenGLView : GLKView {
+    
+    NSUInteger _openGlApiVersion;
+    
+    BOOL _originIsBottomLeft;
 	
 	EAGLContext *_context;
-	
-	BOOL _setup;
     
-    id <NSObject> _touchDelegate;
+    // OpenGL 2.0 members ----
+    GLuint _positionSlot;
+    
+    GLuint _colorSlot;
+    
+    GLint _projectionUniform;
+    
+    GLKBaseEffect *_baseEffect;
 }
 
 
 #pragma mark - Properties
 
-@property (nonatomic, retain) id <NSObject> touchDelegate;
+@property (nonatomic, readonly) GLuint positionSlot;
+@property (nonatomic, readonly) GLuint colorSlot;
+@property (nonatomic, readonly) GLKBaseEffect *baseEffect;
 
 
 #pragma mark - Object lifecycle methods
 
-- (id) initWithFrame: (CGRect) frameRect;
+- (id) initWithFrame: (CGRect) frameRect openGlApiVersion: (NSUInteger) openGlApiVersion originIsBottomLeft: (BOOL) originIsBottomLeft;
+
+
+#pragma mark - Action methods
+
+- (void) render;
 
 @end
 
@@ -68,6 +89,10 @@
 
 #pragma mark - OSX implementation
 
+/*
+ * This class is based on OpenGL 1.1.
+ * OpenGL 2.0+ is not supported as of yet.
+ */
 @interface JFOpenGLView : NSOpenGLView {
 	
 	BOOL _setup;

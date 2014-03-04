@@ -20,12 +20,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-
 // NOTE: Be sure to include OpenGL.framework in your project!
 #import <Foundation/Foundation.h>
-#import <OpenGL/gl.h>
-#import <OpenGL/glu.h>
-#import <OpenGL/CGLTypes.h>
 #import <math.h>
 
 #import "JFOpenGLVertex.h"
@@ -58,6 +54,8 @@
 	@property (nonatomic, strong) JFOpenGLVertex *renderVertex;
 #endif
 
+
++ (id) point;
 
 - (void) mirrorInto: (JFOpenGLPoint *) point;
 

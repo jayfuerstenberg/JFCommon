@@ -22,9 +22,15 @@
 
 // NOTE: Be sure to include OpenGL.framework in your project!
 #import <Foundation/Foundation.h>
-#import <OpenGL/gl.h>
-#import <OpenGL/glu.h>
-#import <OpenGL/CGLTypes.h>
+#if TARGET_OS_IPHONE || TARGET_IPHONE_SIMULATOR
+	#import <OpenGLES/EAGL.h>
+	#import <OpenGLES/ES1/gl.h>
+	#import <OpenGLES/ES1/glext.h>
+#elif TARGET_OS_MAC
+	#import <OpenGL/gl.h>
+	#import <OpenGL/glu.h>
+	#import <OpenGL/CGLTypes.h>
+#endif
 #import <math.h>
 
 #import "JFOpenGLPositionable.h"
@@ -45,7 +51,7 @@
 	 * The reference point against which transformations will occur.
 	 * This may point to this class' referencePoint member or any other reference point.
 	 */
-	JFOpenGLVertex *_transformReferencePoint; // TODO: is this used?
+	JFOpenGLVertex *_transformReferencePoint;
 	
 	// The matrix which will assist in rendering calculations.
 	JFOpenGLMatrix *_transformMatrix;
@@ -72,6 +78,14 @@
 	
 	// The top edge's y coordinate for comparison purposes.
 	GLfloat _topOnScreenY;
+    
+    /*
+     * This is a handy way of conveying the camera's current zoom factor
+     * to transformable objects than need to use such information.
+     * NOTE: This is not inline with the transformation matrix in any
+     * way and the application must manage it separately.
+     */
+    CGFloat _zoomFactor;
 }
 
 
@@ -87,6 +101,9 @@
 	@property (nonatomic, strong) JFOpenGLMatrix *transformMatrix;
 #endif
 @property (nonatomic, assign) BOOL shouldUpdateTransformMatrix;
+@property (nonatomic, assign) CGFloat zoomFactor;
+@property (nonatomic, assign) CGFloat width;
+@property (nonatomic, assign) CGFloat height;
 
 
 #pragma mark - Object lifecycle methods
@@ -95,6 +112,8 @@
 
 
 #pragma mark - Action methods
+
+- (void) setWidth: (GLfloat) width height: (GLfloat) height;
 
 - (void) updateOnScreenCoordinates;
 - (void) transformVertex: (JFOpenGLVertex *) vertex;

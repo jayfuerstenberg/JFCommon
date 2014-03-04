@@ -21,13 +21,21 @@
 // limitations under the License.
 
 // NOTE: Be sure to include OpenGL.framework in your project!
-#import <Foundation/Foundation.h>
-#import <OpenGL/gl.h>
-#import <OpenGL/glu.h>
-#import <OpenGL/CGLTypes.h>
+
+#if TARGET_OS_IPHONE || TARGET_IPHONE_SIMULATOR
+    #import <UIKit/UIKit.h>
+	#import <OpenGLES/EAGL.h>
+	#import <OpenGLES/ES1/gl.h>
+	#import <OpenGLES/ES1/glext.h>
+    #import <GLKit/GLKit.h>
+#elif TARGET_OS_MAC
+    #import <Foundation/Foundation.h>
+	#import <OpenGL/gl.h>
+	#import <OpenGL/glu.h>
+	#import <OpenGL/CGLTypes.h>
+#endif
 
 #import "JFGC.h"
-#import "JFMemoryManager.h"
 
 
 /*
@@ -39,12 +47,28 @@
 	GLuint _textureId;
 	
 	CGFloat _alphaValue;
+    
+    // Texture info for GLKit, if used.
+    GLKTextureInfo *_textureInfo;
 }
 
+
+#pragma mark - Properties
+
 @property (nonatomic, assign) CGFloat alphaValue;
+@property (nonatomic, readonly) GLKTextureInfo *textureInfo;
+
 
 - (GLuint) textureId;
-- (void) loadFromData: (NSData *) data toSize: (NSSize) size;
-- (void) loadFromImage: (NSImage *)image toSize: (NSSize) size;
+
+#if TARGET_OS_IPHONE || TARGET_IPHONE_SIMULATOR
+	- (void) loadFromData: (NSData *) data;
+	- (void) loadFromImage: (UIImage *) image;
+#elif TARGET_OS_MAC
+	- (void) loadFromData: (NSData *) data toSize: (NSSize) size;
+	- (void) loadFromImage: (NSImage *)image toSize: (NSSize) size;
+#endif
+
+- (void) loadForGLKitFromData: (NSData *) data originIsBottomLeft: (BOOL) originIsBottomLeft;
 
 @end

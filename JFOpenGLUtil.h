@@ -22,14 +22,32 @@
 
 #import <Foundation/Foundation.h>
 
+#import "JFOpenGLCStructs.h"
+#import "JFOpenGLPositionable.h"
 #import "JFOpenGLMatrix.h"
 #import "JFOpenGLVertex.h"
+#import "JFOpenGLCamera.h"
 
 
+/*
+ * Convenient utility class for various OpenGL methods.
+ */
 @interface JFOpenGLUtil : NSObject
+
+#if TARGET_OS_IPHONE || TARGET_IPHONE_SIMULATOR
+
++ (void) drawOpenGl1TriangleFanPointWithWidth: (CGFloat) width red: (CGFloat) red green: (CGFloat) green blue: (CGFloat) blue alpha: (CGFloat) alpha atPoint: (CGPoint) point;
++ (void) drawOpenGl2TriangleFanPointWithWidth: (CGFloat) width red: (CGFloat) red green: (CGFloat) green blue: (CGFloat) blue alpha: (CGFloat) alpha atPoint: (CGPoint) point;
++ (void) drawOpenGl1QuadLineWithWidth: (CGFloat) width red: (CGFloat) red green: (CGFloat) green blue: (CGFloat) blue alpha: (CGFloat) alpha from: (CGPoint) beginPoint to: (CGPoint) endPoint;
++ (void) drawOpenGl2QuadLineWithWidth: (CGFloat) width red: (CGFloat) red green: (CGFloat) green blue: (CGFloat) blue alpha: (CGFloat) alpha from: (CGPoint) beginPoint to: (CGPoint) endPoint;
+
+#elif TARGET_OS_MAC
 
 + (void) drawTriangleFanPointWithWidth: (CGFloat) width red: (CGFloat) red green: (CGFloat) green blue: (CGFloat) blue alpha: (CGFloat) alpha atPoint: (CGPoint) point;
 + (void) drawQuadLineWithWidth: (CGFloat) width red: (CGFloat) red green: (CGFloat) green blue: (CGFloat) blue alpha: (CGFloat) alpha from: (CGPoint) beginPoint to: (CGPoint) endPoint;
+
+#endif
+
 + (CGPoint) quadCornerOffsetFrom: (CGPoint) beginPoint whenDrawingTo: (CGPoint) endPoint withLineWidth: (CGFloat) lineWidth;
 + (BOOL) isPoint: (CGPoint) point insideTriangleComprisedOfA: (CGPoint) a b: (CGPoint) b c: (CGPoint) c;
 

@@ -22,9 +22,15 @@
 
 // NOTE: Be sure to include OpenGL.framework in your project!
 #import <Foundation/Foundation.h>
-#import <OpenGL/gl.h>
-#import <OpenGL/glu.h>
-#import <OpenGL/CGLTypes.h>
+#if TARGET_OS_IPHONE || TARGET_IPHONE_SIMULATOR
+	#import <OpenGLES/EAGL.h>
+	#import <OpenGLES/ES1/gl.h>
+	#import <OpenGLES/ES1/glext.h>
+#elif TARGET_OS_MAC
+	#import <OpenGL/gl.h>
+	#import <OpenGL/glu.h>
+	#import <OpenGL/CGLTypes.h>
+#endif
 #import <math.h>
 
 
@@ -41,10 +47,10 @@
 	GLfloat _z;
 	
     // Color components
-	GLuint _red;
-	GLuint _green;
-	GLuint _blue;
-	GLuint _alpha;
+	GLfloat _red;
+	GLfloat _green;
+	GLfloat _blue;
+	GLfloat _alpha;
 	
     // Texture coordinates
 	GLfloat _u;
@@ -54,19 +60,25 @@
 #pragma mark - Object lifecycle methods
 
 + (id) vertex;
++ (id) vertexWithX: (GLfloat) x y: (GLfloat) y z: (GLfloat) z;
 - (id) initWithX: (GLfloat) x y: (GLfloat) y z: (GLfloat) z;
 
-- (void) setRed: (GLuint) red green: (GLuint) green blue: (GLuint) blue;
-- (void) setAlpha: (GLuint) alpha;
+
+#pragma mark - Getter / setter methods
+
+- (void) setRed: (GLfloat) red green: (GLfloat) green blue: (GLfloat) blue;
+- (void) setAlpha: (GLfloat) alpha;
+- (GLfloat) alpha;
 - (void) setU: (GLfloat) u v: (GLfloat) v;
+
+
+#pragma mark - Other methods
 
 - (void) mirrorXyzOf: (JFOpenGLVertex *) source;
 - (void) mirrorUvOf: (JFOpenGLVertex *) source;
 - (void) mirror: (JFOpenGLVertex *) source;
-
 - (void) setRelativeToVertex: (JFOpenGLVertex *) vertex;
 - (void) setRelativeToX: (GLfloat) x y: (GLfloat) y z: (GLfloat) z;
-
 + (BOOL) isReferencePoint: (JFOpenGLVertex *) a equalTo: (JFOpenGLVertex *) b;
 
 

@@ -31,6 +31,9 @@
 @synthesize transformReferencePoint = _transformReferencePoint;
 @synthesize transformMatrix = _transformMatrix;
 @synthesize shouldUpdateTransformMatrix = _shouldUpdateTransformMatrix;
+@synthesize zoomFactor = _zoomFactor;
+@synthesize width = _width;
+@synthesize height = _height;
 
 
 #pragma mark - Object lifecycle methods
@@ -46,11 +49,10 @@
         // The transform matrix has yet to be setup so set it to be updated.
         [self setShouldUpdateTransformMatrix: YES];
         
-        _width = width;
-        _height = height;
+        [self setWidth: width
+                height: height];
         
-        _halfWidth = width * 0.5f;
-        _halfHeight = height * 0.5f;
+        _zoomFactor = 1.0f;
     }
 	
 	[self updateOnScreenCoordinates];
@@ -75,6 +77,15 @@
 
 
 #pragma mark - Action methods
+
+- (void) setWidth: (GLfloat) width height: (GLfloat) height {
+    
+    _width = width;
+    _height = height;
+    
+    _halfWidth = width * 0.5f;
+    _halfHeight = height * 0.5f;
+}
 
 - (void) updateOnScreenCoordinates {
 	

@@ -52,7 +52,7 @@
 @interface JFOpenGLMatrix : NSObject {
 	
 @public
-	GLfloat _m00;
+    GLfloat _m00;
 	GLfloat _m01;
 	GLfloat _m02;
 	GLfloat _m03;
