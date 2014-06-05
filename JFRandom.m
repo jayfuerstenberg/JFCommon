@@ -317,4 +317,36 @@
 	return string;
 }
 
+
+/*
+ * Returns a random date between daysAgo and daysFromNow relative to today.
+ *
+ * Params
+ *      daysAgo
+ *      daysFromNow   
+ *
+ * Returns
+ *      NSDate within the range
+ */
++ (NSDate *) generateRandomDateBetweenDaysAgo: (NSInteger)daysAgo andDaysFromNow: (NSInteger)daysFromNow {
+    
+    NSInteger range = daysFromNow + daysAgo;
+    
+    NSDateComponents *startDay = [[[NSDateComponents alloc] init] autorelease];
+    startDay.day = -daysAgo;
+    
+    NSCalendar *calendar = [NSCalendar currentCalendar];
+    
+    NSDate *date = [NSDate date];
+    date = [calendar dateByAddingComponents:startDay toDate:date options:0];
+
+    NSDateComponents *offsetDays = [[[NSDateComponents alloc] init] autorelease];
+    offsetDays.day = arc4random()%range;
+
+    date = [calendar dateByAddingComponents:offsetDays toDate:date options:0];
+    
+    return date;
+}
+
+
 @end
