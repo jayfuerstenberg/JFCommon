@@ -101,9 +101,31 @@
  *				Must be non-nil and not empty.
  *
  * Return
- *		A decrypted NSData instance if successful, nil otherwise. 
+ *		A decrypted NSData instance if successful, nil otherwise.
  */
 + (NSData *) decryptData: (NSData *) data withKey: (NSString *) key {
+    
+    return [JFAes256Codec decryptData: data
+                              withKey: key
+                 initializationVector: nil
+                        actualKeySize: kCCKeySizeAES256];
+}
+
+/*
+ * Decrypts an NSData instance with the provided key.
+ *
+ * Params
+ *		data                    The data instance to be decrypted.
+ *                              Must be non-nil and not empty.
+ *		key                     The key against which the data will be decrypted.
+ *                              Must be non-nil and not empty.
+ *      initializationVector    The IV header for making the AES algorithm more secure.
+ *      actualKeySize           The number of bytes used for the AES key.
+ *
+ * Return
+ *		A decrypted NSData instance if successful, nil otherwise. 
+ */
++ (NSData *) decryptData: (NSData *) data withKey: (NSString *) key initializationVector: (NSData *) initializationVector actualKeySize: (NSUInteger) actualKeySize {
 	
 	if (data == nil) {
 		// data was nil so return nil.
@@ -127,7 +149,7 @@
 		return nil;
 	}
 	
-	// 'key' should be 32 bytes for AES256, will be null-padded otherwise
+	// 'key' should be at most 32 bytes for AES256, will be null-padded otherwise
 	char keyPtr[kCCKeySizeAES256 + 1]; // room for terminator (unused)
 	bzero(keyPtr, sizeof(keyPtr)); // fill with zeroes (for padding)
 	
@@ -141,8 +163,8 @@
 									 kCCAlgorithmAES128,
 									 kCCOptionPKCS7Padding, 
 									 keyPtr,
-									 kCCKeySizeAES256,
-									 nil, /* initialization vector (optional) */
+                                     actualKeySize,
+									 [initializationVector bytes], /* initialization vector (optional) */
 									 [data bytes],
 									 dataLength, /* input */
 									 buffer,
@@ -155,7 +177,8 @@
 		return nil;
 	}
 	
-	NSData *val = [NSData dataWithBytes: buffer length: numBytesDecrypted];
+	NSData *val = [NSData dataWithBytes: buffer
+                                 length: numBytesDecrypted];
 	free(buffer);
 	return val;
 }
