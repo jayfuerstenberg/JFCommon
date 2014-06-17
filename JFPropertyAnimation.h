@@ -21,6 +21,11 @@
 // limitations under the License.
 
 #import <Foundation/Foundation.h>
+#if TARGET_OS_IPHONE || TARGET_IPHONE_SIMULATOR
+    #import <UIKit/UIKit.h>
+#elif TARGET_OS_MAC
+    #import <Cocoa/Cocoa.h>
+#endif
 
 #import "JFPropertyAnimationDefines.h"
 #import "JFPropertyAnimatable.h"
@@ -76,6 +81,7 @@
 @property (nonatomic, copy) JFPropertyAnimatorAnimateChangeHandler changeHandler;
 @property (nonatomic, copy) JFPropertyAnimatorAnimateCompletionHandler completionHandler;
 @property (nonatomic, retain) JFPropertyAnimationAdvancementArray *animationAdvancementArray;
+@property (nonatomic, assign) NSUInteger animationAdvancementIndex;
 @property (nonatomic, assign) NSUInteger playCount;
 @property (nonatomic, assign) NSUInteger playIndex;
 @property (nonatomic, readonly, getter=isPaused) BOOL paused;

@@ -120,7 +120,7 @@ class JFPropertyAnimator {
         
         var target: JFPropertyAnimatable = animation.target
         var propertyId: UInt = animation.propertyId
-        var existingAnimation: JFPropertyAnimation? = animationForAnimatableAndPropertyId(target, propertyId: propertyId)
+        var existingAnimation: JFPropertyAnimation? = animationForAnimatable(target, propertyId: propertyId)
         if (existingAnimation != nil) {
             managedAnimations.removeObject(existingAnimation)
         }
@@ -132,7 +132,7 @@ class JFPropertyAnimator {
      * Returns the animation for the animatable object plus its animated property pair.
      * If the object and property pair is not managed by this animator nil is returned.
      */
-    func animationForAnimatableAndPropertyId(animatable: JFPropertyAnimatable, propertyId: UInt) -> JFPropertyAnimation? {
+    func animationForAnimatable(animatable: JFPropertyAnimatable, propertyId: UInt) -> JFPropertyAnimation? {
         
         for animation : AnyObject in managedAnimations {
             var anim: JFPropertyAnimation = animation as JFPropertyAnimation
@@ -177,9 +177,7 @@ class JFPropertyAnimator {
                 animationAdvancementIndex = animation.animationAdvancementIndex
                 var currentValue: Float = animation.animationAdvancementArray[animationAdvancementIndex] as Float
                 animation.changeHandler(currentValue: currentValue)
-            }
-            
-            if (hasReachedEnd) {
+            } else {
                 var target: JFPropertyAnimatable = animation.target
                 var propertyId: UInt = animation.propertyId
                 animation.completionHandler(object: target, propertyId: propertyId, playLoop: animation.playIndex)
@@ -364,7 +362,7 @@ class JFPropertyAnimator {
                 granularity: count)
         }
         
-        var existingAnimation: JFPropertyAnimation? = sharedAnimator.animationForAnimatableAndPropertyId(object, propertyId: propertyId)
+        var existingAnimation: JFPropertyAnimation? = sharedAnimator.animationForAnimatable(object, propertyId: propertyId)
         if (existingAnimation != nil) {
             // Stop the existing animation before adding it again...
             stopAnimatingObject(object, propertyId: propertyId)
@@ -429,6 +427,7 @@ class JFPropertyAnimator {
             if (!value.isNaN) {
                 object.setAnimatablePropertyToNewValue(propertyId, newValue: value)
             }
+            
             animationsToRemove.addObject(animation)
         }
         

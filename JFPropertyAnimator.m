@@ -54,7 +54,9 @@ JFPropertyAnimator *__JFPropertyAnimator__sharedSingletonInstance__ = nil;
  */
 + (void) releaseSharedAnimator {
 	
-	[__JFPropertyAnimator__sharedSingletonInstance__ release];
+    #if !__has_feature(objc_arc)
+        [__JFPropertyAnimator__sharedSingletonInstance__ release];
+    #endif
 	__JFPropertyAnimator__sharedSingletonInstance__ = nil;
 }
 
@@ -72,10 +74,15 @@ JFPropertyAnimator *__JFPropertyAnimator__sharedSingletonInstance__ = nil;
 
 - (void) dealloc {
 	
-	[_managedAnimations release];
-	[_animationsToRemove release];
+    #if !__has_feature(objc_arc)
+        [_managedAnimations release];
+        [_animationsToRemove release];
 	
-	[super dealloc];
+        [super dealloc];
+    #else
+        _managedAnimations = nil;
+        _animationsToRemove = nil;
+    #endif
 }
 
 
@@ -186,25 +193,25 @@ JFPropertyAnimator *__JFPropertyAnimator__sharedSingletonInstance__ = nil;
 	@synchronized (copy) {
 		for (JFPropertyAnimation *animation in copy) {
 			[animation advance];
+            NSUInteger playCount = [animation playCount];
+            NSUInteger playIndex = [animation playIndex];
             
-            JFPropertyAnimatorAnimateChangeHandler changeHandler = [animation changeHandler];
-            if (changeHandler != 0) {
-                NSUInteger index = [animation playIndex];
-                CGFloat currentValue = [[animation animationAdvancementArray] valueAtIndex: index];
-                changeHandler(currentValue);
-            }
-			
-			if ([animation hasReachedEnd]) {
-				
+            BOOL hasReachedEnd = [animation hasReachedEnd];
+            if (!hasReachedEnd) {
+                JFPropertyAnimatorAnimateChangeHandler changeHandler = [animation changeHandler];
+                if (changeHandler != 0) {
+                    NSUInteger index = [animation animationAdvancementIndex];
+                    CGFloat currentValue = [[animation animationAdvancementArray] valueAtIndex: index];
+                    changeHandler(currentValue);
+                }
+            } else {
 				JFPropertyAnimatorAnimateCompletionHandler completionHandler = [animation completionHandler];
 				if (completionHandler != 0) {
 					id <JFPropertyAnimatable> target = [animation target];
 					NSUInteger propertyId = [animation propertyId];
-					completionHandler(target, propertyId, 0);
+					completionHandler(target, propertyId, playIndex);
 				}
 					
-				NSUInteger playCount = [animation playCount];
-				NSUInteger playIndex = [animation playIndex];
 				if (playCount == 0 || playIndex < playCount) {
 					// This is a never-ending animation or a limited one with some plays left.
 					[animation repeat];
@@ -231,7 +238,7 @@ JFPropertyAnimator *__JFPropertyAnimator__sharedSingletonInstance__ = nil;
 	
 	return [JFPropertyAnimator animateObject: object
 									property: propertyId
-										from: NAN // Go with the object's current vale.
+										from: NAN // Go with the object's current value.
 										  to: endValue
 									  easeIn: easeIn
 									 easeOut: easeOut
@@ -240,7 +247,6 @@ JFPropertyAnimator *__JFPropertyAnimator__sharedSingletonInstance__ = nil;
                                       change: changeHandler
 								  completion: completionHandler];
 }
-
 
 
 /*
@@ -280,6 +286,10 @@ JFPropertyAnimator *__JFPropertyAnimator__sharedSingletonInstance__ = nil;
 	
 	if (startValueForCalculation == endValue) {
 		// No animation needed as values are the same.
+        if (completionHandler != 0) {
+            completionHandler(object, propertyId, 0);
+        }
+        
 		return nil;
 	}
 	
@@ -334,7 +344,14 @@ JFPropertyAnimator *__JFPropertyAnimator__sharedSingletonInstance__ = nil;
                                             endPoint: CGPointMake(endValue, endValue)
                                          granularity: count];
     }
-	
+    
+    JFPropertyAnimation *existingAnimation = [sharedAnimator animationForAnimatable: object
+                                                                           property: propertyId];
+	if (existingAnimation != nil) {
+        // Stop the existing animation before adding it again...
+        [self stopAnimatingObject: object
+                         property: propertyId];
+    }
 	
 	
 	// Create the animation...
@@ -366,6 +383,8 @@ JFPropertyAnimator *__JFPropertyAnimator__sharedSingletonInstance__ = nil;
 		// Not a valid array.
 		return nil;
 	}
+    
+    JFPropertyAnimator *sharedAnimator = [JFPropertyAnimator sharedAnimator];
 	
 	// Create the animation...
 	JFPropertyAnimation *animation = [JFPropertyAnimation propertyAnimation];
@@ -377,44 +396,19 @@ JFPropertyAnimator *__JFPropertyAnimator__sharedSingletonInstance__ = nil;
 	[animation setCompletionHandler: completionHandler];
 	
 	// Add the animation to the managed array...
-	JFPropertyAnimator *sharedAnimator = [JFPropertyAnimator sharedAnimator];
 	[sharedAnimator addManagedAnimation: animation];
 	
 	return animation;
 }
 
-/*
- * Stops managing the object/property if it is managed.
- */
 + (void) stopAnimatingObject: (id <JFPropertyAnimatable>) object property: (NSUInteger) propertyId {
-	
-	JFPropertyAnimator *sharedAnimator = [JFPropertyAnimator sharedAnimator];
-	[sharedAnimator innerStopAnimatingObject: object
-									property: propertyId];
+    
+    JFPropertyAnimator *sharedAnimator = [JFPropertyAnimator sharedAnimator];
+    [sharedAnimator innerStopAnimatingObject: object
+                                    property: propertyId
+                             setFinalValueTo: NAN];
 }
 
-/*
- * NOTE: Do not call this method from outside this class.
- */
-- (void) innerStopAnimatingObject: (id <JFPropertyAnimatable>) object property: (NSUInteger) propertyId {
-	
-	JFPropertyAnimation *animation = [self animationForAnimatable: object
-														 property: propertyId];
-	if (animation == nil) {
-		return;
-	}
-	
-	[animation stop];
-	
-	@synchronized (_managedAnimations) {
-		[_animationsToRemove addObject: animation];
-		
-		if ([_animationsToRemove count] > 0) {
-			[_managedAnimations removeObjectsInArray: _animationsToRemove];
-			[_animationsToRemove removeAllObjects];
-		}
-	}
-}
 
 + (void) stopAnimatingObject: (id <JFPropertyAnimatable>) object property: (NSUInteger) propertyId setFinalValueTo: (CGFloat) value {
 	
@@ -444,8 +438,10 @@ JFPropertyAnimator *__JFPropertyAnimator__sharedSingletonInstance__ = nil;
 			
 			// Matching animation found!
 			[animation stop];
-			[object setAnimatableProperty: propertyId
-							   toNewValue: value];
+            if (!isnan(value)) {
+                [object setAnimatableProperty: propertyId
+                                   toNewValue: value];
+            }
 			
 			[_animationsToRemove addObject: animation];
 		}

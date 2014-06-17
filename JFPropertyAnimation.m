@@ -32,6 +32,7 @@
 @synthesize changeHandler = _changeHandler;
 @synthesize completionHandler = _completionHandler;
 @synthesize animationAdvancementArray = _animationAdvancementArray;
+@synthesize animationAdvancementIndex = _animationAdvancementIndex;
 @synthesize playCount = _playCount;
 @synthesize playIndex = _playIndex;
 @synthesize paused = _paused;
@@ -43,8 +44,11 @@
 + (id) propertyAnimation {
 	
 	id propertyAnimation = [[JFPropertyAnimation alloc] init];
-	[propertyAnimation autorelease];
-	
+    #if !__has_feature(objc_arc)
+        // Autorelease the instance
+        [propertyAnimation autorelease];
+    #endif
+
 	return propertyAnimation;
 }
 
@@ -60,10 +64,15 @@
 
 - (void) dealloc {
 	
-	[_target release];
-	[_animationAdvancementArray release];
-	
-	[super dealloc];
+    #if !__has_feature(objc_arc)
+        [_target release];
+        [_animationAdvancementArray release];
+    
+        [super dealloc];
+    #else
+        _target = nil;
+        _animationAdvancementArray = nil;
+    #endif
 }
 
 

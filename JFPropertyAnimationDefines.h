@@ -21,6 +21,11 @@
 // limitations under the License.
 
 #import <Foundation/Foundation.h>
+#if TARGET_OS_IPHONE || TARGET_IPHONE_SIMULATOR
+    #import <UIKit/UIKit.h>
+#elif TARGET_OS_MAC
+    #import <Cocoa/Cocoa.h>
+#endif
 
 
 @protocol JFPropertyAnimatable;
@@ -66,6 +71,6 @@ typedef void (^JFPropertyAnimatorAnimateCompletionHandler) (id <JFPropertyAnimat
 #define JFPropertyAnimatorPropertyAcceleration		42
 
 
-
 // NOTE: Custom animatable properties not covered by the above should begin from the below value
 #define JFPropertyAnimatorPropertyUserDefined		10000
+

@@ -39,7 +39,9 @@
 	}
 	
 	id array = [[JFPropertyAnimationAdvancementArray alloc] initWithElementCount: count];
-	[array autorelease];
+    #if !__has_feature(objc_arc)
+        [array autorelease];
+    #endif
 	
 	return array;
 }
@@ -47,7 +49,10 @@
 
 - (id) init {
 	
-	[self release];
+    #if !__has_feature(objc_arc)
+        [self release];
+    #endif
+    
 	return nil;
 }
 
@@ -55,7 +60,9 @@
 - (id) initWithElementCount: (NSUInteger) count {
 	
 	if (count == 0) {
-		[self release];
+        #if !__has_feature(objc_arc)
+            [self release];
+        #endif
 		return nil;
 	}
 	
@@ -74,7 +81,9 @@
 	free(_innerArray);
 	_innerArray = NULL;
 	
-	[super dealloc];
+    #if !__has_feature(objc_arc)
+        [super dealloc];
+    #endif
 }
 
 
