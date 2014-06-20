@@ -1,9 +1,9 @@
 //
-//  JFNetworkUtil.m
-//  JFCommon
+// JFNetworkUtil.m
+// JFCommon
 //
-//  Created by Jason Fuerstenberg on 10/12/28.
-//  Copyright 2010 Jason Fuerstenberg. All rights reserved.
+// Created by Jason Fuerstenberg on 10/12/28.
+// Copyright 2010 Jason Fuerstenberg. All rights reserved.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
