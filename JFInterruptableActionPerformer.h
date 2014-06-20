@@ -2,7 +2,7 @@
 // JFInterruptableActionPerformer.h
 // JFCommon
 //
-// Created by Jason Fuerstenberg on 5/3/2012.
+// Created by Jason Fuerstenberg on 2012/05/03.
 // Copyright (c) 2012 Jason Fuerstenberg. All rights reserved.
 //
 // http://www.jayfuerstenberg.com
@@ -19,6 +19,7 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
+//
 
 #import <Foundation/Foundation.h>
 
