@@ -1,9 +1,9 @@
 //
-//  JFICloudUtil.m
-//  JFCommon
+// JFICloudUtil.m
+// JFCommon
 //
-//  Created by Jason Fuerstenberg on 13/1/28.
-//  Copyright (c) 2013 Jason Fuerstenberg. All rights reserved.
+// Created by Jason Fuerstenberg on 13/01/28.
+// Copyright (c) 2013 Jason Fuerstenberg. All rights reserved.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -16,8 +16,10 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
+//
 
 #import "JFICloudUtil.h"
+
 
 @implementation JFICloudUtil
 

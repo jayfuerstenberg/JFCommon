@@ -1,8 +1,8 @@
 //
-// JFICloudUtil.h
+// JFLocaleMatchUtil.h
 // JFCommon
 //
-// Created by Jason Fuerstenberg on 13/01/28.
+// Created by Jason Fuerstenberg on 2013/02/26.
 // Copyright (c) 2013 Jason Fuerstenberg. All rights reserved.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -19,11 +19,16 @@
 //
 
 #import <Foundation/Foundation.h>
-#import <sys/xattr.h>	// To set the "DO NOT BACKUP" iCloud attribute of local files.
 
 
-@interface JFICloudUtil : NSObject
+/*
+ * A utilitiy class for determining the best locale match between an app and the device.
+ * This class does not attempt to offer matches for geographically nearby locales (Catalan -> Spanish)
+ */
+@interface JFLocaleMatchUtil : NSObject
 
-+ (BOOL) addSkipBackupAttributeToItemAtURL: (NSString *) url;
+
++ (NSString *) optimalLocaleFromSupportedLocales: (NSArray *) supportedLocales forAvailableLocales: (NSArray *) availableLocales fallingBackOnLocale: (NSString *) fallbackLocale;
++ (NSArray *) topTenLocalesFromPreferredLanguages: (NSArray *) preferredLanguages andRegionOfCurrentLocale: (NSString *) currentLocale;
 
 @end
