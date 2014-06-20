@@ -1,9 +1,10 @@
 //
 // JFBCrypt.m
+// JFCommon
 //
 // Created by Jason Fuerstenberg on 11/07/03.
-// http://www.jayfuerstenberg.com
-
+// Copyright (c) 2011 Jason Fuerstenberg. All rights reserved.
+//
 // http://www.jayfuerstenberg.com
 // jay@jayfuerstenberg.com
 //
