@@ -1,5 +1,6 @@
 //
 // JFRandom.m
+// JFCommon
 //
 // Created by Jason Fuerstenberg on 10/04/26.
 // Copyright 2010 Jason Fuerstenberg
@@ -51,7 +52,6 @@
 	*receiver = (arc4random() % ((high + 1) - low)) + low;
 	return YES;
 }
-
 
 /*
  * Generates an optionally unique sequence of random numbers between low and high and places them into the sequence.
@@ -127,7 +127,6 @@
 	return YES;
 }
 
-
 /*
  * Randomly chooses a number from the provided sequence and places it into the receiver.
  *
@@ -169,7 +168,6 @@
 	return YES;
 }
 
-
 /*
  * Returns YES if the provided number appears within the sequence.
  *
@@ -204,7 +202,6 @@
 	// The number was not found.
 	return NO;
 }
-
 
 /*
  * Returns an NSData populated with bytes whose values range from 0 to 255.
@@ -242,7 +239,6 @@
 	return data;
 }
 
-
 /*
  * Returns an NSData populated with bytes whose values range from -128 to 127.
  *
@@ -278,7 +274,6 @@
 	
 	return data;
 }
-
 
 /*
  *
@@ -317,7 +312,6 @@
 	return string;
 }
 
-
 /*
  * Returns a random date between daysAgo and daysFromNow relative to today.
  *
@@ -328,7 +322,7 @@
  * Returns
  *      NSDate within the range
  */
-+ (NSDate *) generateRandomDateBetweenDaysAgo: (NSInteger)daysAgo andDaysFromNow: (NSInteger)daysFromNow {
++ (NSDate *) generateRandomDateBetweenDaysAgo: (NSInteger) daysAgo andDaysFromNow: (NSInteger) daysFromNow {
     
     NSInteger range = daysFromNow + daysAgo;
     
@@ -338,15 +332,18 @@
     NSCalendar *calendar = [NSCalendar currentCalendar];
     
     NSDate *date = [NSDate date];
-    date = [calendar dateByAddingComponents:startDay toDate:date options:0];
-
+    date = [calendar dateByAddingComponents: startDay
+                                     toDate: date
+                                    options: 0];
+    
     NSDateComponents *offsetDays = [[[NSDateComponents alloc] init] autorelease];
-    offsetDays.day = arc4random()%range;
-
-    date = [calendar dateByAddingComponents:offsetDays toDate:date options:0];
+    offsetDays.day = arc4random() % range;
+    
+    date = [calendar dateByAddingComponents: offsetDays
+                                     toDate: date
+                                    options: 0];
     
     return date;
 }
-
 
 @end
