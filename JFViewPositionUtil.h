@@ -22,12 +22,12 @@
 
 
 #import <Foundation/Foundation.h>
-
-#import "TargetConditionals.h"
-
 #if TARGET_OS_IPHONE || TARGET_IPHONE_SIMULATOR
-#import <UIKit/UIKit.h>
+	#import <UIKit/UIKit.h>
+#elif TARGET_OS_MAC
+	#import <Cocoa/Cocoa.h>
 #endif
+
 
 enum {
     JFAnchorPointTopLeft		= 1 << 0, // Top left corner
@@ -44,11 +44,11 @@ typedef NSUInteger JFAnchorPoint;
 
 
 #if TARGET_OS_IPHONE || TARGET_IPHONE_SIMULATOR
-    #define VIEW_TYPE			UIView
-    #define RECT_TYPE			CGRect
-#else
-    #define VIEW_TYPE			NSView
-    #define RECT_TYPE			NSRect
+	#define VIEW_TYPE			UIView
+	#define RECT_TYPE			CGRect
+#elif TARGET_OS_MAC
+	#define VIEW_TYPE			NSView
+	#define RECT_TYPE			NSRect
 #endif
 
 
@@ -72,6 +72,7 @@ typedef NSUInteger JFAnchorPoint;
 
 #pragma mark - Sibling view centric alignment methods
 
++ (void) alignView: (VIEW_TYPE *) view atX: (CGFloat) x belowSiblingView: (VIEW_TYPE *) siblingView withMargin: (CGFloat) margin;
 + (void) leftAlignView: (VIEW_TYPE *) view belowSiblingView: (VIEW_TYPE *) siblingView withMargin: (CGFloat) margin;
 + (void) rightAlignView: (VIEW_TYPE *) view belowSiblingView: (VIEW_TYPE *) siblingView withMargin: (CGFloat) margin;
 + (void) centerView: (VIEW_TYPE *) view belowSiblingView: (VIEW_TYPE *) siblingView withMargin: (CGFloat) margin;
@@ -96,6 +97,5 @@ typedef NSUInteger JFAnchorPoint;
 
 + (void) setHeightOfSuperview: (VIEW_TYPE *) superview toFitAllSubviewsWithMargin: (CGFloat) margin;
 + (void) snapViewToDiscreteCoordinates: (VIEW_TYPE *) view;
-
 
 @end

@@ -146,6 +146,29 @@
 #pragma mark - Sibling view centric alignment methods
 
 /*
+ * Aligns the provided view below a sibling view distanced by the margin/offset and positions it at x.
+ *
+ * Params
+ *		view				The view to left align.
+ *      x                   The new x coordinate of the view.
+ *		siblingView			The sibling view under which the view will appear.
+ *		margin				The margin/offset between the view and the sibling view.
+ */
++ (void) alignView: (VIEW_TYPE *) view atX: (CGFloat) x belowSiblingView: (VIEW_TYPE *) siblingView withMargin: (CGFloat) margin {
+    
+    RECT_TYPE siblingFrame = [siblingView frame];
+    CGFloat y = siblingFrame.origin.y + siblingFrame.size.height + margin;
+    RECT_TYPE frame = [view frame];
+#if TARGET_OS_IPHONE || TARGET_IPHONE_SIMULATOR
+    RECT_TYPE newFrame = CGRectMake(x, y, frame.size.width, frame.size.height);
+    [view setFrame: newFrame];
+#else
+    RECT_TYPE newFrame = NSMakeRect(x, y, frame.size.width, frame.size.height);
+    [view setFrame: newFrame];
+#endif
+}
+
+/*
  * Left aligns the provided view below a sibling view distanced by the margin/offset.
  *
  * Params
