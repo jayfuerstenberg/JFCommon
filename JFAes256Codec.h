@@ -32,5 +32,6 @@
 + (NSData *) encryptData: (NSData *) data withKey: (NSString *) key;
 + (NSData *) decryptData: (NSData *) data withKey: (NSString *) key;
 + (NSData *) decryptData: (NSData *) data withKey: (NSString *) key initializationVector: (NSData *) initializationVector actualKeySize: (NSUInteger) actualKeySize;
++ (NSData *) decryptData: (NSData *) data withKeyData: (NSData *) keyData initializationVector: (NSData *) initializationVector actualKeySize: (NSUInteger) actualKeySize;
 
 @end
