@@ -24,5 +24,6 @@
 @interface JFScrollViewUtil : NSObject
 
 + (CGFloat) scrollView: (UIScrollView *) scrollView byKeyboardHeight: (CGFloat) keyboardHeight ifNeededToUnobscureView: (UIView *) view;
++ (UIScrollView *) firstScrollViewInSuperViewHierarchyOfView: (UIView *) view;
 
 @end

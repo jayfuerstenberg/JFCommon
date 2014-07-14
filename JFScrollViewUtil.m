@@ -23,6 +23,8 @@
 
 @implementation JFScrollViewUtil
 
+#if TARGET_OS_IPHONE || TARGET_IPHONE_SIMULATOR
+
 /*
  * Scrolls the scroll view such that the view is not obscured by a keyboard of designated height.
  * Keyboard height is specifiable here to allow for custom input views injected in the view.
@@ -63,5 +65,23 @@
 	
 	return amountToScroll;
 }
+
+/*
+ * Locates the first super view of the provided view which is a UIScrollView if any, or nil.
+ */
++ (UIScrollView *) firstScrollViewInSuperViewHierarchyOfView: (UIView *) view {
+	
+	while (view != nil) {
+		if ([view isKindOfClass: [UIScrollView class]]) {
+			return (UIScrollView *) view;
+		}
+		
+		view = [view superview];
+	}
+	
+	return nil;
+}
+
+#endif
 
 @end

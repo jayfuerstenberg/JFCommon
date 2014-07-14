@@ -45,6 +45,7 @@
 
 + (void) drawTriangleFanPointWithWidth: (CGFloat) width red: (CGFloat) red green: (CGFloat) green blue: (CGFloat) blue alpha: (CGFloat) alpha atPoint: (CGPoint) point;
 + (void) drawQuadLineWithWidth: (CGFloat) width red: (CGFloat) red green: (CGFloat) green blue: (CGFloat) blue alpha: (CGFloat) alpha from: (CGPoint) beginPoint to: (CGPoint) endPoint;
++ (NSRect) optimalRectForParentRect: (NSRect) parentRect withAspectRatio: (CGFloat) aspectRatio;
 
 #endif
 

@@ -102,8 +102,8 @@
 #endif
 @property (nonatomic, assign) BOOL shouldUpdateTransformMatrix;
 @property (nonatomic, assign) CGFloat zoomFactor;
-@property (nonatomic, assign) CGFloat width;
-@property (nonatomic, assign) CGFloat height;
+@property (nonatomic, assign) GLfloat width;
+@property (nonatomic, assign) GLfloat height;
 
 
 #pragma mark - Object lifecycle methods

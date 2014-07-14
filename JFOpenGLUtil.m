@@ -406,6 +406,27 @@ CGFloat __JFOpenGLUtil__PreviousTriangleFanPointWidth__ = 0.0f;
 	glEnd();
 }
 
+/*
+ * Returns the most optimal rectangle with the given aspect ratio and fitting within the parent rectangle.
+ */
++ (NSRect) optimalRectForParentRect: (NSRect) parentRect withAspectRatio: (CGFloat) aspectRatio {
+	
+	// Try to consume the entire width...
+	CGFloat height = parentRect.size.width * (1.0f / aspectRatio);
+	if (height > parentRect.size.height) {
+		// Not going to work.  Try matching the height...
+		CGFloat width = parentRect.size.height * aspectRatio;
+		CGFloat x = (parentRect.size.width - width) / 2.0f;
+		NSRect optimalRect = NSMakeRect(x, 0.0f, width, parentRect.size.height);
+		return optimalRect;
+	}
+	
+	// Fits finely.
+	CGFloat y = (parentRect.size.height - height) / 2.0f;
+	NSRect optimalRect = NSMakeRect(0.0f, y, parentRect.size.width, height);
+	return optimalRect;
+}
+
 #endif
 
 

@@ -158,6 +158,11 @@
 @implementation JFOpenGLView
 
 
+#pragma mark - Properties
+
+@synthesize camera = _camera;
+
+
 #pragma mark - Object lifecycle methods
 
 - (id) init {

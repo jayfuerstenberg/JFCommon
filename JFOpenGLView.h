@@ -34,6 +34,7 @@
 #endif
 
 #import "JFOpenGLMatrix.h"
+#import "JFOpenGLCamera.h"
 
 
 #if TARGET_OS_IPHONE || TARGET_IPHONE_SIMULATOR
@@ -95,8 +96,15 @@
  */
 @interface JFOpenGLView : NSOpenGLView {
 	
+    JFOpenGLCamera *_camera;
+    
 	BOOL _setup;
 }
+
+
+#pragma mark - Properties
+
+@property (nonatomic, retain) JFOpenGLCamera *camera;
 
 
 #pragma mark - Object lifecycle methods

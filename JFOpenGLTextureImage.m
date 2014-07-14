@@ -35,6 +35,14 @@
 
 #pragma mark - Object lifecycle methods
 
++ (id) textureImage {
+    
+    id textureImage = [[JFOpenGLTextureImage alloc] init];
+    [textureImage autorelease];
+    
+    return textureImage;
+}
+
 - (void) dealloc {
 	
 	// NOTE: The OpenGL texture has to be released from the main thread.
