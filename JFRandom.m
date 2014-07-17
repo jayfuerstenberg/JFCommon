@@ -313,6 +313,53 @@
 }
 
 /*
+ *
+ * Returns a string populated with random characters.
+ *
+ * Params
+ *		length		The length of the resulting string.
+ *					Must be 1 or greater or nil will be returned.
+ *      characters  The valid ASCII characters to include in the output.
+ *
+ * Returns
+ *		An ASCII encoded NSString instance.
+ */
++ (NSString *) generateRandomStringOfLength: (NSUInteger) length withOnlyCharacters: (NSString *) characters {
+	
+	if (length == 0) {
+		return nil;
+	}
+    
+    NSUInteger charactersLength = [characters length];
+    if (charactersLength == 0) {
+        return [JFRandom generateRandomStringOfLength: length];
+    }
+    
+    
+	
+	NSInteger *sequence = malloc(sizeof(NSInteger) * length);
+	[JFRandom generateNumberSequenceOfLength: length
+										into: sequence
+								  betweenLow: 0
+									 andHigh: charactersLength - 1
+						withOnlyUniqueValues: NO];
+	
+    const char *cc = [characters cStringUsingEncoding: NSASCIIStringEncoding];
+	char *randData = malloc(length);
+	for (NSUInteger loop = 0; loop < length; loop++) {
+        NSUInteger s = sequence[loop];
+		randData[loop] = cc[s];
+	}
+	
+	free(sequence);
+	NSString *string = [NSString stringWithCString: randData
+										  encoding: NSASCIIStringEncoding];
+	free(randData);
+	
+	return string;
+}
+
+/*
  * Returns a random date between daysAgo and daysFromNow relative to today.
  *
  * Params
