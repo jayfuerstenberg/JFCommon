@@ -145,4 +145,45 @@
 	return [NSString stringWithUTF8String: inet_ntoa(*list[0])];
 }
 
+
+#if TARGET_OS_IPHONE && !TARGET_IPHONE_SIMULATOR
+
++ (NSString *) wifiNetworkName {
+    
+    NSString *networkName = nil;
+
+    CFArrayRef myArray = CNCopySupportedInterfaces();
+    CFDictionaryRef captiveNtwrkDict = CNCopyCurrentNetworkInfo(CFArrayGetValueAtIndex(myArray, 0));
+    NSDictionary *dict = (__bridge NSDictionary *) captiveNtwrkDict;
+    NSString *ssid = [dict objectForKey: @"SSID"];
+    if ([ssid length] > 0) {
+        networkName = ssid;
+    }
+    
+    return networkName;
+}
+
+#elif TARGET_IPHONE_SIMULATOR
+
++ (NSString *) wifiNetworkName {
+    
+    return @"Not detectable from iOS Simulator";
+}
+
+#else
+
++ (NSString *) wifiNetworkName {
+
+    CWInterface *wif = [CWInterface interface];
+    NSString *networkName = nil;
+
+   if (wif != nil && wif.ssid != nil) {
+       networkName = wif.ssid;
+   }
+
+    return networkName;
+}
+
+#endif
+
 @end

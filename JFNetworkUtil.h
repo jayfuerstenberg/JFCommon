@@ -20,6 +20,13 @@
 
 #import <Foundation/Foundation.h>
 #import <SystemConfiguration/SystemConfiguration.h>
+
+#if TARGET_OS_IPHONE || TARGET_IPHONE_SIMULATOR
+#import <SystemConfiguration/CaptiveNetwork.h> // For network name detection
+#else
+#import <CoreWLAN/CoreWLAN.h> // For network name detection
+#endif
+
 #import <netdb.h>
 #import <ifaddrs.h>
 #import <arpa/inet.h>
@@ -30,5 +37,6 @@
 + (BOOL) isConnectedToNetwork;
 + (BOOL) isConnectedToWifi;
 + (NSString *) localIpAddress;
++ (NSString *) wifiNetworkName;
 
 @end
