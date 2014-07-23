@@ -22,6 +22,14 @@
 
 @implementation JFPopularityCache
 
+
+#pragma mark - Properties
+
+@synthesize cache = _cache;
+
+
+#pragma mark - Object lifecycle methods
+
 /*
  * Initializes the cache.
  *
@@ -51,6 +59,9 @@
 }
 
 #endif
+
+
+#pragma mark - Methods
 
 - (void) setMaxCapacity: (NSUInteger) maxCapacity {
 	
@@ -115,6 +126,12 @@
 						   forKey: key];
 				[_popularity insertObject: object
 								  atIndex: 0];
+                
+                if ([object conformsToProtocol: @protocol(JFPopularityCacheable)]) {
+                    if ([object respondsToSelector: @selector(wasAddedToPopularityCache:)]) {
+                        [object wasAddedToPopularityCache: self];
+                    }
+                }
 			}
 		}
 	} else {
@@ -162,9 +179,15 @@
 		[_popularity removeObjectAtIndex: index];
 		NSArray *allKeys = [_cache allKeysForObject: object];
 		[_cache removeObjectsForKeys: allKeys];
+        
+        if ([object conformsToProtocol: @protocol(JFPopularityCacheable)]) {
+            if ([object respondsToSelector: @selector(wasRemovedFromPopularityCache:)]) {
+                [object wasRemovedFromPopularityCache: self];
+            }
+        }
 	}
-	
-	return object;	
+
+	return object;
 }
 
 - (id) removeLastObject {
@@ -173,14 +196,21 @@
 		return nil;
 	}
 	
-	id object = nil;
+	id <NSObject> object = nil;
 	@synchronized (_popularity) {
 		@synchronized (_cache) {
 			object = [_popularity lastObject];
 			NSArray *allKeys = [_cache allKeysForObject: object];
 			[_popularity removeLastObject];
 			[_cache removeObjectsForKeys: allKeys];
-		}
+            
+            if ([object conformsToProtocol: @protocol(JFPopularityCacheable)]) {
+                if ([object respondsToSelector: @selector(wasRemovedFromPopularityCache:)]) {
+                    [object performSelector: @selector(wasRemovedFromPopularityCache:)
+                                 withObject: self];
+                }
+            }
+        }
 	}
 	
 	return object;

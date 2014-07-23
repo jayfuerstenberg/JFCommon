@@ -19,6 +19,8 @@
 
 #import <Foundation/Foundation.h>
 
+#import "JFPopularityCacheable.h"
+
 
 // The default max capacity
 #define JFPopularityCacheDefaultMaxCapacity		10
@@ -39,6 +41,14 @@
 	// The popularity rank.
 	NSMutableArray *_popularity;
 }
+
+
+#pragma mark - Properties
+
+@property (nonatomic, readonly) NSDictionary *cache;
+
+
+#pragma mark - Methods
 
 - (void) setMaxCapacity: (NSUInteger) maxCapacity;
 - (NSUInteger) maxCapacity;
