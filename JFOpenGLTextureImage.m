@@ -29,8 +29,10 @@
 #pragma mark - Properties
 
 @synthesize alphaValue = _alphaValue;
-@synthesize textureInfo = _textureInfo;
 
+#if TARGET_OS_IPHONE || TARGET_IPHONE_SIMULATOR
+@synthesize textureInfo = _textureInfo;
+#endif
 
 
 #pragma mark - Object lifecycle methods
@@ -50,8 +52,6 @@
 						   withObject: nil
 						waitUntilDone: YES];
     
-    [_textureInfo release];
-	
 	[super dealloc];
 }
 
@@ -125,13 +125,21 @@
 			imageH = rect.size.height;
 			
 			GLubyte *textureData = (GLubyte *) calloc(imageW * imageH << 2, 1);
-			CGContextRef imageContext = CGBitmapContextCreate(textureData,
+			/*CGContextRef imageContext = CGBitmapContextCreate(textureData,
 															  imageW,
 															  imageH,
 															  8,
 															  imageW << 2,
 															  CGImageGetColorSpace(imageRef),
-															  kCGImageAlphaPremultipliedLast);
+															  kCGImageAlphaPremultipliedLast);*/
+            
+            CGContextRef imageContext = CGBitmapContextCreate(textureData,
+															  imageW,
+															  imageH,
+															  8,
+															  imageW << 2,
+															  CGImageGetColorSpace(imageRef),
+															  (CGBitmapInfo) kCGImageAlphaPremultipliedLast);
 			
 			if (imageContext != nil) {
 				
@@ -144,13 +152,21 @@
 				if (_textureId == 0) {
 					NSLog(@"Could not generate texture ID");
 				}
-				
+                
 				glBindTexture(GL_TEXTURE_2D, _textureId);
+                
+                GLboolean isTexture = glIsTexture(_textureId);
+                if (!isTexture) {
+                    NSLog(@"Texture was not bound properly.");
+                }
 				
 				// when texture area is small, bilinear filter the closest mipmap
 				glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 				// when texture area is large, bilinear filter the original
 				glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+                glTexParameterf(GL_TEXTURE_2D , GL_TEXTURE_WRAP_S, GL_CLAMP);
+                glTexParameterf(GL_TEXTURE_2D , GL_TEXTURE_WRAP_T, GL_CLAMP);
+                
 				glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, size.width, size.height, 0, GL_RGBA, GL_UNSIGNED_BYTE, textureData);
 				
 				// NOTE: At this point OpenGL has the texture in its own buffer.
@@ -211,7 +227,7 @@
     CGContextTranslateCTM (context, 0, height);
     CGContextScaleCTM (context, 1.0, -1.0);
     
-    CGContextDrawImage(context, CGRectMake( 0, 0, width, height), image.CGImage);
+    CGContextDrawImage(context, CGRectMake(0, 0, width, height), image.CGImage);
     
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, imageData);
     
@@ -233,6 +249,48 @@
  */
 - (void) loadFromImage: (NSImage *) image toSize: (NSSize) size {
 	
+    /*if (image == nil) {
+        return;
+    }
+    
+    glGenTextures(1, &_textureId);
+    glBindTexture(GL_TEXTURE_2D, _textureId);
+    glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    
+    NSSize s = [image size];
+    GLuint width = s.width;
+    GLuint height = s.height;
+    
+    //GLuint width = CGImageGetWidth(image.CGImage);
+    //GLuint height = CGImageGetHeight(image.CGImage);
+    CGColorSpaceRef colorSpace = CGColorSpaceCreateDeviceRGB();
+    void *imageData = malloc(height * width * 4);
+    CGContextRef context = CGBitmapContextCreate(imageData, width, height, 8, 4 * width, colorSpace, kCGImageAlphaPremultipliedLast | kCGBitmapByteOrder32Big);
+    CGColorSpaceRelease(colorSpace);
+    CGContextClearRect(context, CGRectMake(0, 0, width, height));
+    CGContextTranslateCTM (context, 0, height);
+    CGContextScaleCTM (context, 1.0, -1.0);
+    
+    CGImageSourceRef source;
+    
+    source = CGImageSourceCreateWithData((CFDataRef) [image TIFFRepresentation], NULL);
+    CGImageRef maskRef =  CGImageSourceCreateImageAtIndex(source, 0, NULL);
+    
+    CGContextDrawImage(context, CGRectMake(0, 0, width, height), maskRef);
+    
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, imageData);
+    int e = glGetError();
+    NSLog(@"e = %i", e);
+    // NOTE: At this point OpenGL has the texture in its own buffer.
+    
+    CGContextRelease(context);
+    
+    free(imageData);*/
+    
+    
 	NSData *imageData = [image TIFFRepresentation];
 	[self loadFromData: imageData
 				toSize: size];
@@ -240,7 +298,7 @@
 
 #endif
 
-
+#if TARGET_OS_IPHONE || TARGET_IPHONE_SIMULATOR
 /*
  * Loads a GLKit optimized texture info object from the image data provided.
  */
@@ -257,6 +315,8 @@
                                                         options: options
                                                           error: nil] retain];
 }
+
+#endif
 
 // NOTE: The below method is commented only because it has not been tested recently.  It may still work and you're free to try it.
 /*
@@ -345,6 +405,22 @@
 
 
 - (void) releaseTextureInMainThread {
+    
+#if TARGET_OS_IPHONE || TARGET_IPHONE_SIMULATOR
+    /*
+     * NOTE: Apparently GLKTextureInfo has a leak of sorts.
+     * Unless we proactively call the underlying OpenGL call
+     * to release its inner texture info the object may NOT
+     * do so on its own.
+     *
+     * Source: http://stackoverflow.com/questions/8720221/release-textures-glktextureinfo-objects-allocated-by-glktextureloader
+     */
+    GLuint name = [_textureInfo name];
+    if (name > 0) {
+        glDeleteTextures(1, &name);
+    }
+    JFRelease(_textureInfo);
+#endif
 	
 	if (_textureId > 0) {
 		// Unbind the texture from the video card's memory...

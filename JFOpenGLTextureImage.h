@@ -27,14 +27,13 @@
 	#import <OpenGLES/EAGL.h>
 	#import <OpenGLES/ES1/gl.h>
 	#import <OpenGLES/ES1/glext.h>
+    #import <GLKit/GLKit.h>
 #elif TARGET_OS_MAC
     #import <Foundation/Foundation.h>
 	#import <OpenGL/gl.h>
 	#import <OpenGL/glu.h>
 	#import <OpenGL/CGLTypes.h>
 #endif
-
-#import <GLKit/GLKit.h>
 
 #import "JFGC.h"
 
@@ -49,19 +48,25 @@
 	
 	CGFloat _alphaValue;
     
+#if TARGET_OS_IPHONE || TARGET_IPHONE_SIMULATOR
     // Texture info for GLKit, if used.
     GLKTextureInfo *_textureInfo;
+#endif
 }
 
 
 #pragma mark - Properties
 
 @property (nonatomic, assign) CGFloat alphaValue;
+
+#if TARGET_OS_IPHONE || TARGET_IPHONE_SIMULATOR
 @property (nonatomic, readonly) GLKTextureInfo *textureInfo;
+#endif
+
 
 + (id) textureImage;
-- (GLuint) textureId;
 
+- (GLuint) textureId;
 
 #if TARGET_OS_IPHONE || TARGET_IPHONE_SIMULATOR
 	- (void) loadFromData: (NSData *) data;
