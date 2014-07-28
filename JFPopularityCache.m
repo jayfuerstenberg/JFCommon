@@ -180,11 +180,13 @@
 		NSArray *allKeys = [_cache allKeysForObject: object];
 		[_cache removeObjectsForKeys: allKeys];
         
+        [object retain];
         if ([object conformsToProtocol: @protocol(JFPopularityCacheable)]) {
             if ([object respondsToSelector: @selector(wasRemovedFromPopularityCache:)]) {
                 [object wasRemovedFromPopularityCache: self];
             }
         }
+        [object release];
 	}
 
 	return object;
@@ -200,6 +202,7 @@
 	@synchronized (_popularity) {
 		@synchronized (_cache) {
 			object = [_popularity lastObject];
+            [object retain];
 			NSArray *allKeys = [_cache allKeysForObject: object];
 			[_popularity removeLastObject];
 			[_cache removeObjectsForKeys: allKeys];
@@ -210,6 +213,7 @@
                                  withObject: self];
                 }
             }
+            [object release];
         }
 	}
 	

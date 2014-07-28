@@ -345,11 +345,12 @@
 						withOnlyUniqueValues: NO];
 	
     const char *cc = [characters cStringUsingEncoding: NSASCIIStringEncoding];
-	char *randData = malloc(length);
+	char *randData = malloc(length + 1);
 	for (NSUInteger loop = 0; loop < length; loop++) {
         NSUInteger s = sequence[loop];
 		randData[loop] = cc[s];
 	}
+    randData[length] = 0;
 	
 	free(sequence);
 	NSString *string = [NSString stringWithCString: randData
