@@ -2,7 +2,7 @@
 // JFOpenGLTextureImage.m
 // JFCommon
 //
-// Created by Jason Fuerstenberg on 09/11/03.
+// Created by Jason Fuerstenberg on 2009/11/03.
 // Copyright 2009 Jason Fuerstenberg. All rights reserved.
 //
 // http://www.jayfuerstenberg.com
@@ -299,8 +299,16 @@
 #endif
 
 #if TARGET_OS_IPHONE || TARGET_IPHONE_SIMULATOR
+
+- (void) loadForGLKitFromData: (NSData *) data {
+    
+    [self loadForGLKitFromData: data
+            originIsBottomLeft: NO];
+}
+
 /*
  * Loads a GLKit optimized texture info object from the image data provided.
+ * NOTE: This method must be called from the main UI thread.
  */
 - (void) loadForGLKitFromData: (NSData *) data originIsBottomLeft: (BOOL) originIsBottomLeft {
     
@@ -311,9 +319,10 @@
     NSDictionary *options = [NSDictionary dictionaryWithObjectsAndKeys: [NSNumber numberWithBool: originIsBottomLeft], GLKTextureLoaderOriginBottomLeft,
                                                                         nil];
     
+    NSError *error = nil;
     _textureInfo = [[GLKTextureLoader textureWithContentsOfData: data
                                                         options: options
-                                                          error: nil] retain];
+                                                          error: &error] retain];
 }
 
 #endif

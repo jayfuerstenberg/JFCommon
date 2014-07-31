@@ -2,7 +2,7 @@
 // JFOpenGLTextureImage.h
 // JFCommon
 //
-// Created by Jason Fuerstenberg on 09/11/03.
+// Created by Jason Fuerstenberg on 2009/11/03.
 // Copyright 2009 Jason Fuerstenberg. All rights reserved.
 //
 // http://www.jayfuerstenberg.com
@@ -71,11 +71,13 @@
 #if TARGET_OS_IPHONE || TARGET_IPHONE_SIMULATOR
 	- (void) loadFromData: (NSData *) data;
 	- (void) loadFromImage: (UIImage *) image;
+    - (void) loadForGLKitFromData: (NSData *) data;
+    - (void) loadForGLKitFromData: (NSData *) data originIsBottomLeft: (BOOL) originIsBottomLeft;
 #elif TARGET_OS_MAC
 	- (void) loadFromData: (NSData *) data toSize: (NSSize) size;
 	- (void) loadFromImage: (NSImage *)image toSize: (NSSize) size;
 #endif
 
-- (void) loadForGLKitFromData: (NSData *) data originIsBottomLeft: (BOOL) originIsBottomLeft;
+
 
 @end
