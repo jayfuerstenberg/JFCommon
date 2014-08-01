@@ -109,6 +109,16 @@ JFPropertyAnimator *__JFPropertyAnimator__sharedSingletonInstance__ = nil;
 
 #pragma mark - Animation methods
 
++ (NSUInteger) managedAnimationCount {
+    
+    return [[JFPropertyAnimator sharedAnimator] innerManagedAnimationCount];
+}
+
+- (NSUInteger) innerManagedAnimationCount {
+    
+    return [_managedAnimations count];
+}
+
 /*
  * Adds the provided animation to this animator.
  *
@@ -223,6 +233,8 @@ JFPropertyAnimator *__JFPropertyAnimator__sharedSingletonInstance__ = nil;
 		}
 	}
     
+    [copy release];
+    
     @synchronized (_managedAnimations) {
         if ([_animationsToRemove count] > 0) {
 			[_managedAnimations removeObjectsInArray: _animationsToRemove];
@@ -322,25 +334,25 @@ JFPropertyAnimator *__JFPropertyAnimator__sharedSingletonInstance__ = nil;
 	} else if (easeIn && easeOut) {
         
         [JFPropertyAnimator populateAdvancementArray: advancementArray
-                                      withStartPoint: CGPointMake(startValue, startValue)
-                                       controlPoint1: CGPointMake(startValue, endValue)
-                                       controlPoint2: CGPointMake(endValue, startValue)
+                                      withStartPoint: CGPointMake(startValueForCalculation, startValueForCalculation)
+                                       controlPoint1: CGPointMake(startValueForCalculation, endValue)
+                                       controlPoint2: CGPointMake(endValue, startValueForCalculation)
                                             endPoint: CGPointMake(endValue, endValue)
                                          granularity: count];
     } else if (easeIn) {
         
         [JFPropertyAnimator populateAdvancementArray: advancementArray
-                                      withStartPoint: CGPointMake(startValue, startValue)
-                                       controlPoint1: CGPointMake(startValue, endValue)
-                                       controlPoint2: CGPointMake(startValue, endValue)
+                                      withStartPoint: CGPointMake(startValueForCalculation, startValue)
+                                       controlPoint1: CGPointMake(startValueForCalculation, endValue)
+                                       controlPoint2: CGPointMake(startValueForCalculation, endValue)
                                             endPoint: CGPointMake(endValue, endValue)
                                          granularity: count];
     } else if (easeOut) {
         
         [JFPropertyAnimator populateAdvancementArray: advancementArray
-                                      withStartPoint: CGPointMake(startValue, startValue)
-                                       controlPoint1: CGPointMake(endValue, startValue)
-                                       controlPoint2: CGPointMake(endValue, startValue)
+                                      withStartPoint: CGPointMake(startValueForCalculation, startValueForCalculation)
+                                       controlPoint1: CGPointMake(endValue, startValueForCalculation)
+                                       controlPoint2: CGPointMake(endValue, startValueForCalculation)
                                             endPoint: CGPointMake(endValue, endValue)
                                          granularity: count];
     }
@@ -438,12 +450,23 @@ JFPropertyAnimator *__JFPropertyAnimator__sharedSingletonInstance__ = nil;
 			
 			// Matching animation found!
 			[animation stop];
+            
+            
             if (!isnan(value)) {
                 [object setAnimatableProperty: propertyId
                                    toNewValue: value];
             }
 			
 			[_animationsToRemove addObject: animation];
+            
+            // Notify the animation completion handler, if any, of the stop...
+            JFPropertyAnimatorAnimateCompletionHandler completionHandler = [animation completionHandler];
+            if (completionHandler != 0) {
+                id <JFPropertyAnimatable> target = [animation target];
+                NSUInteger propertyId = [animation propertyId];
+                NSUInteger playIndex = [animation playIndex];
+                completionHandler(target, propertyId, playIndex);
+            }
 		}
 		
 		if ([_animationsToRemove count] > 0) {

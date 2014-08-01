@@ -91,6 +91,7 @@
 
 #pragma mark - Animation methods
 
++ (NSUInteger) managedAnimationCount;
 + (void) advanceManagedAnimations;
 + (JFPropertyAnimation *) animateObject: (id <JFPropertyAnimatable>) object property: (NSUInteger) propertyId to: (CGFloat) endValue easeIn: (BOOL) easeIn easeOut: (BOOL) easeOut overDuration: (NSTimeInterval) duration playCount: (NSUInteger) playCount change: (JFPropertyAnimatorAnimateChangeHandler) change completion: (JFPropertyAnimatorAnimateCompletionHandler) completionHandler;
 + (JFPropertyAnimation *) animateObject: (id <JFPropertyAnimatable>) object property: (NSUInteger) propertyId from: (CGFloat) startValue to: (CGFloat) endValue easeIn: (BOOL) easeIn easeOut: (BOOL) easeOut overDuration: (NSTimeInterval) duration playCount: (NSUInteger) playCount change: (JFPropertyAnimatorAnimateChangeHandler) change completion: (JFPropertyAnimatorAnimateCompletionHandler) completionHandler;
