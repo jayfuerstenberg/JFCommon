@@ -34,7 +34,16 @@
  */
 - (void) dealloc {
 	
-	[_timer invalidate];
+	[self cleanUp];
+	
+#if !__has_feature(objc_arc) // NON ARC
+	[super dealloc];
+#endif
+}
+
+- (void) cleanUp {
+    
+    [_timer invalidate];
 	
 #if !__has_feature(objc_arc) // NON ARC
 	[_timer release];
@@ -44,14 +53,26 @@
 	_timer = nil;
 	_target = nil;
 	_object = nil;
-	
-#if !__has_feature(objc_arc) // NON ARC
-	[super dealloc];
-#endif
 }
 
 
 #pragma mark - Action methods
+
+/*
+ * Forces the perform even if the time has not transpired.
+ */
+- (void) performPendingActionIfAny {
+    
+	if (!_cancelled) {
+		if (_expectsObject) {
+			[_target performSelector: _action withObject: _object];
+		} else {
+			[_target performSelector: _action];
+		}
+	}
+    
+    [self cleanUp];
+}
 
 /*
  * Performs the provided action upon the target after the specified delay.
@@ -59,6 +80,11 @@
  */
 - (void) performInterruptableAction: (SEL) action uponTarget: (id <NSObject>) target afterDelay: (NSTimeInterval) delay {
     
+#if !__has_feature(objc_arc) // NON ARC
+    [_target release];
+	[_object release];
+#endif
+
     _previousInvocation = [[NSDate date] timeIntervalSince1970];
     _delay = delay;
     _target = target;
@@ -130,7 +156,6 @@
     [_timer fire];
 }
 
-
 /*
  * The method called when the timer fired.
  * This triggers the action.
@@ -141,17 +166,8 @@
     if (now - _previousInvocation < _delay) {
         return;
     }
-	
-	if (!_cancelled) {
-		if (_expectsObject) {
-			[_target performSelector: _action withObject: _object];
-		} else {
-			[_target performSelector: _action];
-		}
-	}
     
-    [_timer invalidate];
-    _timer = nil;
+    [self performPendingActionIfAny];
 }
 
 @end

@@ -40,6 +40,7 @@
 
 #pragma mark - Action methods
 
+- (void) performPendingActionIfAny;
 - (void) performInterruptableAction: (SEL) action uponTarget: (id <NSObject>) target afterDelay: (NSTimeInterval) delay;
 - (void) performInterruptableAction: (SEL) action uponTarget: (id <NSObject>) target afterDelay: (NSTimeInterval) delay withObject: (id <NSObject>) object;
 - (void) cancel;
