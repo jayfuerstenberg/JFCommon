@@ -461,7 +461,7 @@ JFPropertyAnimator *__JFPropertyAnimator__sharedSingletonInstance__ = nil;
             
             // Notify the animation completion handler, if any, of the stop...
             JFPropertyAnimatorAnimateCompletionHandler completionHandler = [animation completionHandler];
-            if (completionHandler != 0) {
+            if (completionHandler != 0 && !isnan(value)) {
                 id <JFPropertyAnimatable> target = [animation target];
                 NSUInteger propertyId = [animation propertyId];
                 NSUInteger playIndex = [animation playIndex];
