@@ -33,6 +33,7 @@
     #import <Foundation/Foundation.h>
 #endif
 
+#import "JFOpenGLUtil.h"
 #import "JFOpenGLMatrix.h"
 #import "JFOpenGLCamera.h"
 
