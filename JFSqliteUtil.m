@@ -120,7 +120,8 @@
 	NSString *allValuesAsString = [allValues componentsJoinedByString: separator];
 	
 	// Prepend and append additional separators to the field in order to make searching by a specific values possible/easier.
-	NSString *dbValue = [NSString stringWithFormat: @"%@%@%@", separator, allValuesAsString, separator];
+	NSString *dbValue = allValuesAsString == nil ? @""
+												 : [NSString stringWithFormat: @"%@%@%@", separator, allValuesAsString, separator];
 	[JFSqliteUtil setStringColumn: columnNo
 					  ofStatement: statement
 						  toValue: dbValue];
